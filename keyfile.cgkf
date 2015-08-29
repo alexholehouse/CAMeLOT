@@ -1,0 +1,23 @@
+# Keyfile for running 
+#
+#
+#
+#
+#
+
+
+# define your amino acid sequence
+SEQUENCE MRPGPDRYDGDRGRDERGERDRDRDRRDRDRDRDRDRDRDRDRDRERNRDRDRDRDRDRDRDRDMRDDRRRSSIVRRRSRSRSRGDRGGDRERDRHRDRD
+
+# define your CG groups
+GP1 ED
+GP2 RK
+GP3 QWTYIPASFGHLCVNM
+
+# set the number of groups (avoids human error
+NGPS 3
+
+# Set the root directory of where your simulations lie
+SIMROOT /work/alex/SPA/SPA_100_jedd/SPA100
+
+
