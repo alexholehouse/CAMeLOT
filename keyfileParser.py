@@ -13,8 +13,13 @@ class KeyfileParser:
         keywordDict = self.parse_default(keyFileName)
 
         self.CAMELOT_VERSION             = CAMELOT_VERSION
+        
 
         self.SIMROOT                     = keywordDict['SIMROOT']
+        self.PYTHON_BIN                  = keywordDict['PYTHON_BIN']
+        self.LAMMPS_BIN                  = keywordDict['LAMMPS_BIN']
+
+
         self.BOOTSTRAP_NUM_ITER          = keywordDict['BOOTSTRAP_NUM_ITER']
         self.BOOTSTRAP_SIZE              = keywordDict['BOOTSTRAP_SIZE']
 
@@ -60,6 +65,9 @@ class KeyfileParser:
     def parse_default(self, keyFileName):
         keywordDict = {}
         #keywordDict['SIMROOT'] = '/work/alex/SPA/SPA_100_jedd/SPA100'
+        keywordDict['PYTHON_BIN'] = '/opt/pappuPython/bin/python'
+        keywordDict['LAMMPS_BIN'] = '/home/kruff/LAMMPS/lammps-16Dec13/src/lmp_openmpi5'
+        
         keywordDict['SIMROOT'] = '/work/kruff/N17permutants/09_2014_new/Nt17Qn/monomer/Q40'
         
         keywordDict['BOOTSTRAP_NUM_ITER'] = 20
@@ -90,7 +98,9 @@ class KeyfileParser:
 
         keywordDict['INITIAL_LJ_PARAMS_FILE'] = 'INITIAL_LJ_PARAMS.txt'
 
-        ## Moltemplate keywords below here
+        ## Moltemplate keywords below here - these will probably be things
+        ## one should think more deelpy about and indeed detailed guidance
+        ## on what these mean is going to be critical!
         keywordDict['OPT_KAPPA']             = float(0.1)
         keywordDict['OPT_LJ_CUTOFF']         = float(21.1)
         keywordDict['OPT_COUL_CUTOFF']       = float(15.0)
@@ -102,7 +112,7 @@ class KeyfileParser:
 
         # CG alphabet defined here
         # Basically in the actual keyfile we're going to have each grouping defined
-        # as one group per line, where the line defines the residues, the name, and upper and lower bounds
+        # as one group per line, where the line defines the residues, the group name, and upper and lower bounds
         # for sigma and epsilon - I'm thinking format like this
         #
         # CG_GROUP residues:KRED, name:chg, eps_lb:0.2, eps_ub:2.0, sig_lb:8.5, sig_ub:10.5
@@ -113,7 +123,10 @@ class KeyfileParser:
         # sig:<val>
         #
         # For eps you can specify a range or a default as 
-        # eps:
+        # eps:<val> 
+        #
+        # but you MUST provide one of the two (i.e. cannot work out what Epislon should be from
+        # scratch!
 
         keywordDict['CG_GROUPS'] = []
 
@@ -125,6 +138,5 @@ class KeyfileParser:
 
         line="residues:APGSTC, name:weak, eps_lb:0.01, eps_ub:0.3"
         keywordDict['CG_GROUPS'].append(CGParameterGroup(line))
-
 
         return keywordDict

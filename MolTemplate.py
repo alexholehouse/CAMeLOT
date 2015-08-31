@@ -32,6 +32,8 @@ class MolTemplate:
 
         self.parameters = {}
 
+        # cycle through the expected keywords as defined above and raise exception if an associated value
+        # is not found
         for keyword in parameter_keywords:
             try:
                 self.parameters[keyword] = parameter_dictionary[keyword]
@@ -54,8 +56,19 @@ class MolTemplate:
                                 aat_parameters_file,
                                 bb13_parameters_file):
 
+        """
+        Moltemplate is a general way to define molecules/forcefields for LAMMPS simulations. It provides a simple templating
+        language which can be used to build LAMMPS compatible input files. CAMeLOT makes extensive use of Moltemplate to 
+        define the simulation system. For more information on Moltemplate see http://www.moltemplate.org/
 
-        # first initialize the file and write the first part
+        build_moltemplate_input is a single function which constructs a moltemplate input file, which can then be run
+        using moltemplate to build a LAMMPS compatible file
+
+
+        """
+
+
+        # first initialize the moltemplate file and write all the relevant header information
         self.initialize_file()
 
         
@@ -94,7 +107,7 @@ class MolTemplate:
     def initialize_file(self):
         """
         Function which ensures we're writing sections to an empty file and then
-        writes the initial part of the moltemplate file
+        writes the moltemplate header file
 
         """
         
@@ -161,17 +174,23 @@ class MolTemplate:
     #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
     def write_section(self, filename, section_name, write_style, comments):
         """
-        filename is the name a file
+        write_section writes a moltemplate section to an existing file
+
+
+        filename is the parameter file which is going to be written to this
+        section.
+
         section_name is a string giving the section name
-        write_style is one of two options
-        comments is a list of commenst which go before the main data
+
+        write_style is one of two options ('write' or 'write_once')
+
+        comments is a list of comments which go before the main data
 
 
         """
 
-        # define allowed write-styles
-        allowed_write_styles = ["write","write_once"]
-        
+        # define allowed write-styles and check we comply!
+        allowed_write_styles = ["write","write_once"]        
         if write_style not in allowed_write_styles:
             raise MolTemplateException("Undefined write style provided when writing moltemplate file")
             

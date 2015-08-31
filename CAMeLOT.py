@@ -58,6 +58,8 @@ OptObj = Optimization(KeyFile, SimObj.get_sequence_vector(), SimObj.get_charge_v
 OptObj.write_initial_sigma_eps()
 OptObj.build_moltemplate_input()
 OptObj.build_GaussianProcess_runner_code()
+OptObj.build_GaussianProcess_function_code()
+OptObj.build_GaussianProcess_update_code()
 
 
 
