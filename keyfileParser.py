@@ -14,11 +14,11 @@ class KeyfileParser:
 
         self.CAMELOT_VERSION             = CAMELOT_VERSION
         
-
+        self.TEMP                        = keywordDict['TEMP']
+        
         self.SIMROOT                     = keywordDict['SIMROOT']
         self.PYTHON_BIN                  = keywordDict['PYTHON_BIN']
         self.LAMMPS_BIN                  = keywordDict['LAMMPS_BIN']
-
 
         self.BOOTSTRAP_NUM_ITER          = keywordDict['BOOTSTRAP_NUM_ITER']
         self.BOOTSTRAP_SIZE              = keywordDict['BOOTSTRAP_SIZE']
@@ -65,6 +65,9 @@ class KeyfileParser:
     def parse_default(self, keyFileName):
         keywordDict = {}
         #keywordDict['SIMROOT'] = '/work/alex/SPA/SPA_100_jedd/SPA100'
+
+        keywordDict['TEMP']       = 315.0
+
         keywordDict['PYTHON_BIN'] = '/opt/pappuPython/bin/python'
         keywordDict['LAMMPS_BIN'] = '/home/kruff/LAMMPS/lammps-16Dec13/src/lmp_openmpi5'
         

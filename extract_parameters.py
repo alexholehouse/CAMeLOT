@@ -53,11 +53,12 @@ class Simulations:
 
         # set key constants
         self.kB   = 0.0019872041               # kcal/mol/K
-        self.Temp = 315                        # temperature
+        
         self.eta  = (0.629e-3)*(1e-10)*(1e-15) # visocity of water
         self.amu2kg = 1.66053892e-27           # conversion from amu to kg
 
         # Read the keyfile info
+        self.TEMP                       = KeyFileObj.TEMP                        # temperature
         self.SIMROOT                    = KeyFileObj.SIMROOT
         self.BOOTSTRAP_NUM_ITER         = KeyFileObj.BOOTSTRAP_NUM_ITER 
         self.BOOTSTRAP_SIZE             = KeyFileObj.BOOTSTRAP_SIZE
@@ -254,7 +255,7 @@ class Simulations:
         self.STDMessage("Building custom dampening parameters...",msgType='PHASE')
         
         # get water visocity
-        visocity       = self.get_water_visocity(self.Temp)
+        visocity       = self.get_water_visocity(self.TEMP)
 
         # get a vector of the masses of each residue
         residue_masses = self.build_mass_parameters(writeFile=False)
@@ -507,7 +508,7 @@ class Simulations:
                 L[bts_iteration][idx] = np.mean(i_to_i1_distance[idx][random_index])
 
                 # extract apparent stiffness based on width of standard devaition
-                K[bts_iteration][idx] = (self.kB*self.Temp)/(2*(np.mean(i_to_i1_distance_sqrd[idx][random_index]) - np.square(L[bts_iteration][idx])))
+                K[bts_iteration][idx] = (self.kB*self.TEMP)/(2*(np.mean(i_to_i1_distance_sqrd[idx][random_index]) - np.square(L[bts_iteration][idx])))
 
                 # extract histogram - NOTE that the histogram boundaries are hardcoded as 0 to 1 nm, which is a pretty
                 # good range and for single bead per residue shouldn't ever be too small, BUT if we go to higher resolution
@@ -637,7 +638,7 @@ class Simulations:
             L.append(vals_mean)
             
             # get angle stiffness
-            K.append( (np.square(180/np.pi))*(self.kB*self.Temp)/(2*(np.mean(np.square(vals_temp)) - (vals_mean**2))))
+            K.append( (np.square(180/np.pi))*(self.kB*self.TEMP)/(2*(np.mean(np.square(vals_temp)) - (vals_mean**2))))
 
             # if we're generating plots...
             if self.PLOT_ANG_HISTOGRAMS:
@@ -787,7 +788,7 @@ class Simulations:
 
             # Convert probability into energy and normalize onto some scale such 
             # that the lowest minima is 0
-            vals_EN = -np.log(vals)*self.kB*self.Temp - np.min(-np.log(vals)*self.kB*self.Temp)
+            vals_EN = -np.log(vals)*self.kB*self.TEMP - np.min(-np.log(vals)*self.kB*self.TEMP)
 
             # set any values which have become inft to the max observed energy
             vals_EN[ vals_EN == np.inf] = max(vals_EN[np.isfinite(vals_EN)])
