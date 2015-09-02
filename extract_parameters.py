@@ -63,18 +63,15 @@ class Simulations:
         self.SIMROOT                    = KeyFileObj.SIMROOT
         self.BOOTSTRAP_NUM_ITER         = KeyFileObj.BOOTSTRAP_NUM_ITER 
         self.BOOTSTRAP_SIZE             = KeyFileObj.BOOTSTRAP_SIZE
+        
+
+        # define filenames
         self.BOND_DEFINITION_FILE       = KeyFileObj.BOND_DEFINITION_FILE
         self.BOND_PARAMETER_FILE        = KeyFileObj.BOND_PARAMETER_FILE
         self.DIHEDRAL_DEFINITION_FILE   = KeyFileObj.DIHEDRAL_DEFINITION_FILE
         self.DIHEDRAL_PARAMETER_FILE    = KeyFileObj.DIHEDRAL_PARAMETER_FILE
         self.ANGLE_DEFINITION_FILE      = KeyFileObj.ANGLE_DEFINITION_FILE
         self.ANGLE_PARAMETER_FILE       = KeyFileObj.ANGLE_PARAMETER_FILE
-
-        self.PLOT_BOND_HISTOGRAMS       = KeyFileObj.PLOT_BOND_HISTOGRAMS
-        self.PLOT_ANG_HISTOGRAMS        = KeyFileObj.PLOT_ANG_HISTOGRAMS
-
-        self.TRAJECTORY_FILE            = KeyFileObj.TRAJECTORY_FILE
-        self.PDB_FILE                   = KeyFileObj.PDB_FILE
         self.MBT_PARAMETER_FILE         = KeyFileObj.MBT_PARAMETER_FILE
         self.EBT_PARAMETER_FILE         = KeyFileObj.EBT_PARAMETER_FILE
         self.AAT_PARAMETER_FILE         = KeyFileObj.AAT_PARAMETER_FILE 
@@ -83,6 +80,13 @@ class Simulations:
         self.DAMPENING_PARAMETER_FILE   = KeyFileObj.DAMPENING_PARAMETER_FILE 
         self.MASS_PARAMETER_FILE        = KeyFileObj.MASS_PARAMETER_FILE 
         self.INITIAL_XYZ_FILE           = KeyFileObj.INITIAL_XYZ_FILE
+        self.RES_RES_DISTANCES          = KeyFileObj.RES_RES_DISTANCES
+        
+        self.PLOT_BOND_HISTOGRAMS       = KeyFileObj.PLOT_BOND_HISTOGRAMS
+        self.PLOT_ANG_HISTOGRAMS        = KeyFileObj.PLOT_ANG_HISTOGRAMS
+
+        self.TRAJECTORY_FILE            = KeyFileObj.TRAJECTORY_FILE
+        self.PDB_FILE                   = KeyFileObj.PDB_FILE
 
         # >> Determine the number of replica based on the number of directories (1...n)
         # =================================================================================================================
@@ -1013,9 +1017,39 @@ class Simulations:
 
     def build_inter_residue_distance_vectors(self):
         """
-        Function which generates a CSV file with the full inter-residue distances (i.e. a redundant set of data)
-
+        Function which generates a CSV file with the full inter-residue distances (i.e. a redundant set of data). Note
+        this calculates ALL the distances...
+        
         """
+        # to avoid building up a huge memory burden we write each residue by residue 
+
+        # remove any content which existed before
+        with open(self.RES_RES_DIS, 'w') as fh:
+            fh.write('')
+            
+        # cycle through each residue
+        for res in self.resVector:
+            
+            # and the cycle through the same residues
+            for res2 in self.resVector:
+
+                # and each over tmp
+                replica_distances = np.array([])
+                for replica in self.replica_vector:
+
+                    prot = replica.proteinTrajectoryList[0]
+                    
+                    tmp_distances = np.concatenate((tmp_distances, prot_get_interResidueCOMDistance(res, res2)))
+                    
+                with open(self.RES_RES_DIS, 'a') as fh:
+                    fh.write("%i, %i, " % (res, res2))
+                    np.savetxt(fh, tmp_distance, delimiter=',', newline=', ', fmt="%4.4f")
+                    fh.write("\n")
+
+
+                
+
+
 
         
     #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>

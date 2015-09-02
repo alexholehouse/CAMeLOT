@@ -46,6 +46,7 @@ class KeyfileParser:
         self.AT_PARAMETER_FILE           = keywordDict['AT_PARAMETER_FILE']
         self.BB13_PARAMETER_FILE         = keywordDict['BB13_PARAMETER_FILE']
         self.DAMPENING_PARAMETER_FILE    = keywordDict['DAMPENING_PARAMETER_FILE']                
+        self.RES_RES_DISTANCES           = keywordDict['RES_RES_DISTANCES']
 
         # optimization keywords
         self.OPT_KAPPA                   = keywordDict['OPT_KAPPA']     
@@ -124,6 +125,7 @@ class KeyfileParser:
         keywordDict['DAMPENING_PARAMETER_FILE'] = 'DAMP_PARAMS.txt'
         keywordDict['MASS_PARAMETER_FILE'] = 'MASS_PARAMS.txt'
         keywordDict['INITIAL_XYZ_FILE']    = 'INITIAL_POS.txt'
+        keywordDict['RES_RES_DISTANCES']   = 'RES_RES_DIS.txt'
 
         keywordDict['TRAJECTORY_FILE'] = "N_005___traj.xtc"
         #keywordDict['TRAJECTORY_FILE'] = "__traj.xtc"
