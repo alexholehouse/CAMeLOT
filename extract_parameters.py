@@ -1009,6 +1009,13 @@ class Simulations:
                 l=idx+4
                 fh.write('dihedral_coeff  @dihedral:Res%iRes%iRes%iRes%i bb13 %4.1f %4.1f %4.1f\n'  % (i,j,k,l, 0,0,0,))
 
+
+    def build_inter_residue_distance_vectors(self):
+        """
+        Function which generates a CSV file with the full inter-residue distances (i.e. a redundant set of data)
+
+        """
+
         
     #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
     #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>   

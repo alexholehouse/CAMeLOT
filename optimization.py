@@ -805,7 +805,118 @@ class Optimization:
         
 
     def build_GaussianProcess_target_code(self):
+        """
+        function overlap = get_overlap(iteration,num_res)
 
+% Box length
+bl = [255.1 255.1 255.1];
+% Number of flanking residues
+nres = num_res;
+% Total positions 
+tot_pos = nres;
+% Check iteration
+iteration
+
+% Remove first 1e5 steps
+equil = 101;
+
+% Get positions of beads
+da = readdcd([num2str(iteration) '/optimization.dcd'],1:tot_pos);
+xyzmat=da(equil:end,:);
+% Number of frames
+nfr=size(xyzmat,1);
+
+% Bins
+bins=0:1:100;
+
+% Get distance distributions for all pairs at least 3 beads apart: Coarse Grain
+for i=1:nfr
+count = 0;
+  for j=1:nres
+    pos1(1:3,1) = xyzmat(i,1+3*(j-1):3+3*(j-1));
+    for k=j+5:nres
+      pos2(1:3,1) = xyzmat(i,1+3*(k-1):3+3*(k-1));
+      dx=(pos1(1,:)-pos2(1,:));
+      if (abs(dx)>bl(1)*0.5)
+	dx=bl(1)-abs(dx);
+      end
+      dy=(pos1(2,:)-pos2(2,:));
+      if (abs(dy)>bl(2)*0.5)
+	dy=bl(2)-abs(dy);
+      end
+      dz=(pos1(3,:)-pos2(3,:));
+      if (abs(dz)>bl(3)*0.5)
+	dz=bl(3)-abs(dz);
+      end
+      count = count+1;
+      distqf(i,count) = sqrt((dx).^2+(dy).^2+(dz).^2);
+      clear dx; clear dy; clear dz; clear pos2;
+    end
+    clear pos1;
+  end
+end
+
+for i=1:count
+  mdfq(i)=mean(distqf(:,i));
+  hdfq=hist(distqf(:,i),bins);
+  nhdfq(i,:)=hdfq./sum(hdfq);
+  clear hdfq;
+end
+
+% Smooth coarse-grain distributions
+for i=1:count
+  snhdfq(i,:)=smooth(nhdfq(i,:));
+end
+
+% Load in all-atom smoothed distributions
+aa_dfq = load('all_atom_dist_distributions_smooth_min_1_6.mat');
+aa_dfq = aa_dfq.smnhdfq;
+
+% Load in all-atom mean distance
+aa_mdfq = load('all_atom_dist_mean_min_1_6.mat');
+aa_mdfq = aa_mdfq.mdfq_aa;
+
+st = 1;
+en = count;
+
+%  h=figure('visible','off'); 
+%  for i=st:en
+%    subplot(10,12,i)
+%    plot(bins,aa_dfq(i,:),'r'); hold on;
+%    plot(bins,snhdfq(i,:),'b'); hold on;
+%    xlim([0 50]);
+%    set(gca,'fontsize',6)
+%  end
+%  filename=sprintf([num2str(iteration) '/overlap_distribution']);
+%  saveas(h,filename,'pdf');
+%  
+%  h2=figure('visible','off');
+%  plot(1:1:count,aa_mdfq,'-o','markerfacecolor','r','markeredgecolor','r','color','r'); hold on;
+%  plot(1:1:count,mdfq,'-o','markerfacecolor','b','markeredgecolor','b','color','b'); hold on;
+%  filename2=sprintf([num2str(iteration) '/mean_overlap']);
+%  saveas(h2,filename2,'pdf');
+
+
+% Determine overlap between coarse grain and all atom simulations for all distributions
+for i=st:en
+  overlap(i)=(2-sum(abs(aa_dfq(i,:)-snhdfq(i,:))))/2;
+end
+
+moverlap=1-mean(overlap);
+
+% Print iteration number to file
+if iteration == 1
+  fileID=fopen('mean_overlap.txt','w');
+  fprintf(fileID, '%4.4f\n', moverlap);
+else
+  fileID=fopen('mean_overlap.txt','at');
+  fprintf(fileID, '%4.4f\n', moverlap);
+end
+fclose(fileID)
+
+ 
+
+        """
         pass
 
 
