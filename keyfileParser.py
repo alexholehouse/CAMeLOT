@@ -3,11 +3,14 @@
 ## Pappu lab, Washington University in St. Louis
 ##
 
+from CAMeLOTExceptions import KeyFileException
 from CGParameterGroup import CGParameterGroup
 from configs import CAMELOT_VERSION
 
 class KeyfileParser:
 
+    #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>   
+    #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>   
     def __init__(self, keyFileName):
         
         keywordDict = self.parse_default(keyFileName)
@@ -42,9 +45,7 @@ class KeyfileParser:
         self.AAT_PARAMETER_FILE          = keywordDict['AAT_PARAMETER_FILE']
         self.AT_PARAMETER_FILE           = keywordDict['AT_PARAMETER_FILE']
         self.BB13_PARAMETER_FILE         = keywordDict['BB13_PARAMETER_FILE']
-        self.DAMPENING_PARAMETER_FILE    = keywordDict['DAMPENING_PARAMETER_FILE']
-        
-        
+        self.DAMPENING_PARAMETER_FILE    = keywordDict['DAMPENING_PARAMETER_FILE']                
 
         # optimization keywords
         self.OPT_KAPPA                   = keywordDict['OPT_KAPPA']     
@@ -59,9 +60,39 @@ class KeyfileParser:
         # coarse grained alphabet, bounds, names and which parameters
         # are to be optimized
         self.CG_GROUPS                   = keywordDict['CG_GROUPS']
+
+        # Having intialized all the object variables we run any self consistency
+        # checks which may be important. One can imagine adding a large set of 
+        # sanitation checks here such that we know all the input parameters are
+        # valid before we start anything...
+
+        self.check_CGGroups_are_unique()
+
+
+
+    #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>   
+    #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>   
+    def check_CGGroups_are_unique(self):
+        """
+        Function which ensures the names associated with all the CGGroups are
+        unique. This is important because we use these names to define placerholders
+        for parameters during the optimization process, so their uniqueness is
+        kind of critical.
+
+        """
         
+        names=[]
+        
+        for group in self.CG_GROUPS:
+            if group.name in names:
+                raise KeyFileException('One of the CGGroup names defined in the key file [%s] was not unique. Please ensure all names are unique or you will FSU' % group.name)
+            else:
+                names.append(group.name)
+            
 
-
+                
+    #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>   
+    #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>                   
     def parse_default(self, keyFileName):
         keywordDict = {}
         #keywordDict['SIMROOT'] = '/work/alex/SPA/SPA_100_jedd/SPA100'
@@ -82,8 +113,8 @@ class KeyfileParser:
         keywordDict['ANGLE_DEFINITION_FILE'] = 'ANGLE_DEF.txt'
         keywordDict['ANGLE_PARAMETER_FILE'] = 'ANGLE_PARAMS.txt'
 
-        keywordDict['PLOT_BOND_HISTOGRAMS'] = True
-        keywordDict['PLOT_ANG_HISTOGRAMS'] = True
+        keywordDict['PLOT_BOND_HISTOGRAMS'] = False
+        keywordDict['PLOT_ANG_HISTOGRAMS'] = False
 
         keywordDict['MBT_PARAMETER_FILE']  = 'MBT_PARAMS.txt'
         keywordDict['EBT_PARAMETER_FILE']  = 'EBT_PARAMS.txt'
@@ -105,7 +136,7 @@ class KeyfileParser:
         ## one should think more deelpy about and indeed detailed guidance
         ## on what these mean is going to be critical!
         keywordDict['OPT_KAPPA']             = float(0.1)
-        keywordDict['OPT_LJ_CUTOFF']         = float(21.1)
+        keywordDict['OPT_LJ_CUTOFF']         = float(24.1)
         keywordDict['OPT_COUL_CUTOFF']       = float(15.0)
         keywordDict['OPT_MOLTEMPLATE_FILE']  = 'Moltemplate_config.lt'
         keywordDict['OPT_DIELECT']           = float(80)

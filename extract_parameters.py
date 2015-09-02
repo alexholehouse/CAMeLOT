@@ -937,7 +937,7 @@ class Simulations:
                 j=idx+2
                 k=idx+3
                 l=idx+4
-                fh.write('@dihedral:Res%iRes%iRes%iRes%i @atom:Res%i @atom:Res%i @atom:Res%i @atom:Res%i @bond:Res%iRes %i @bond:Res%iRes%i @bond:Res%iRes%i\n'  % (i,j,k,l,i,j,k,l,i,j,j,k,k,l))
+                fh.write('@dihedral:Res%iRes%iRes%iRes%i @atom:Res%i @atom:Res%i @atom:Res%i @atom:Res%i @bond:Res%iRes%i @bond:Res%iRes%i @bond:Res%iRes%i\n'  % (i,j,k,l,i,j,k,l,i,j,j,k,k,l))
 
         self.STDMessage('Writing dihedral parameters to [%s]...'%self.DIHEDRAL_PARAMETER_FILE,msgType='WRITING')
         with open(self.DIHEDRAL_PARAMETER_FILE,'w') as fh:

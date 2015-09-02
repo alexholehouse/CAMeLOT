@@ -3,7 +3,7 @@
 ## Pappu lab, Washington University in St. Louis
 ##
 
-from CAMeLOTExceptions import KeyFileExceptions
+from CAMeLOTExceptions import KeyFileException
 from configs import MAX_NAME_LEN
 
 
@@ -38,7 +38,7 @@ class CGParameterGroup:
         # items are accounted for)
         self.name      = None # parameter group name (i.e. what we're calling this
                               # parameter group - will be used as a prefix for LAMMPS
-                              # parameter names
+                              # parameter names. MUST BE UNIQUE 
 
         self.residues  = None # string of residues defined by this set - i.e. what are 
                               # the one letter amino acid codes associated with the
@@ -64,7 +64,7 @@ class CGParameterGroup:
                 key   = item.split(":")[0].lower().strip()
                 value = item.split(":")[1].strip()
             except:
-                raise KeyFileExceptions("ERROR: Unable to the keyfile parameters associated with %s" % item)
+                raise KeyFileException("ERROR: Unable to the keyfile parameters associated with %s" % item)
             
 
             # residues string

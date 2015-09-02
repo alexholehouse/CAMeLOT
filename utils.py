@@ -35,10 +35,21 @@ def print_logo(version):
     print ""
     print "  ________  ________  _____ ______   _______   ___       ________  _________    "
     print " |\   ____\|\   __  \|\   _ \  _   \|\  ___ \ |\  \     |\   __  \|\___   ___\  "
-    print " \ \  \___|\ \  \|\  \ \  \\\__\ \  \ \   __/|\ \  \    \ \  \|\  \|___ \  \_|  "
-    print "  \ \  \    \ \   __  \ \  \\|__| \  \ \  \_|/_\ \  \    \ \  \\\  \   \ \  \   "
-    print "   \ \  \____\ \  \ \  \ \  \    \ \  \ \  \_|\ \ \  \____\ \  \\\  \   \ \  \  "
+    print " \ \  \___|\ \  \|\  \ \  \ \__\ \  \ \   __/|\ \  \    \ \  \ \  \|___ \  \_|  "
+    print "  \ \  \    \ \   __  \ \  \|__|  \  \ \  \_|/_\ \  \    \ \  \ \  \   \ \  \   "
+    print "   \ \  \____\ \  \ \  \ \  \    \ \  \ \  \_|\ \ \  \____\ \  \_\  \   \ \  \  "
     print "    \ \_______\ \__\ \__\ \__\    \ \__\ \_______\ \_______\ \_______\   \ \__\ "
     print "     \|_______|\|__|\|__|\|__|     \|__|\|_______|\|_______|\|_______|    \|__| "
     print ""
     print "Version: " + str(version)
+
+def writeline(line, fh):
+    """
+    writeline is a stupidly simple function which takes a string and writes it to the open 
+    file associated with fh in exatcly the formatted it's provided (i.e. all custom characters
+    are include) with a trailing newline.
+
+    This makes writing code that generates code or config files much easier...
+    """
+    fh.write("%s\n" % repr(line)[1:-1])
+

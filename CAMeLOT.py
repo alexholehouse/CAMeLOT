@@ -51,7 +51,7 @@ SimObj         = Simulations(KeyFile)
 #damps          = SimObj.build_damping_parameters()
 #masses         = SimObj.build_mass_parameters()
 #masses         = SimObj.build_initial_starting_parameters()
-#K,L            = SimObj.build_bond_angles()
+#(K,L)          = SimObj.build_bond_angles()
 
 OptObj = Optimization(KeyFile, SimObj.get_sequence_vector(), SimObj.get_charge_vector(), SimObj.get_residue_rgs())
 

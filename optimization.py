@@ -6,6 +6,7 @@
 import time
 from CAMeLOTExceptions import OptimizationException
 from MolTemplate import MolTemplate
+from utils import writeline
 
 class Optimization:
     
@@ -190,7 +191,10 @@ class Optimization:
         with open(self.INITIAL_LJ_PARAMS_FILE,'w') as fh:
             for idx in self.idxVector:
                 res=idx+1
-                fh.write('pair_coeff  @atom:Res%i @atom:Res%i lj/cut/coul/debye %s %s %s\n' %(res, res, self.initial_epsilons[idx], self.initial_sigmas[idx], self.initial_sigma_coef[idx]))
+                # the approach below was true when using a hybrid potential, but apparently for a non-hybird potential you
+                # don't need to define the potential type on *each* line. 
+                #fh.write('pair_coeff  @atom:Res%i @atom:Res%i lj/cut/coul/debye %s %s %s\n' %(res, res, self.initial_epsilons[idx], self.initial_sigmas[idx], self.initial_sigma_coef[idx]))
+                fh.write('pair_coeff  @atom:Res%i @atom:Res%i %s %s %s\n' %(res, res, self.initial_epsilons[idx], self.initial_sigmas[idx], self.initial_sigma_coef[idx]))
             
                 
 
@@ -201,6 +205,8 @@ class Optimization:
         Function which returns the total number of (independent) parameters to be
         optimized - essentially this defines the dimensionality of the space the
         Gaussian process optimization has to navigate.
+
+        In all cases, we're only optimizing sigma or epsilon parameters, and in all cases
 
         """                
         params_to_opt = []
@@ -270,8 +276,12 @@ class Optimization:
         self.build_GaussianProcess_runner_code()
         self.build_GaussianProcess_function_code()
         self.build_GaussianProcess_update_code()
+        self.build_GaussianProcess_simulation_code()
+        self.build_system_setup_file()
         self.build_nvt_minimization_file()
         self.build_nvt_simulation_code()
+        
+        
 
         
     #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -403,7 +413,7 @@ class Optimization:
             fh.write("  iteration = iteration + 1\n")                    
             fh.write("  % Print iteration number to file\n")
             fh.write("  fileID=fopen('number_of_iterations.txt','w');\n")
-            fh.write("  fprintf(fileID, '%4.0f', iteration);\n")
+            fh.write("  fprintf(fileID, '%d', iteration);\n")
             fh.write("  fclose(fileID);\n")
             
             fh.write("\n")
@@ -502,7 +512,7 @@ class Optimization:
             fh.write("      with open(i+'_guess.txt','r') as rfh:\n")
             fh.write('         current_guess[i] = float(rfh.read())\n')
             fh.write('   except IOError:\n')
-            fh.write("      current_guess[i] = 0.0\n")
+            fh.write("      current_guess[i] = 1.01\n")
             
             fh.write("\n")
             fh.write("   # sigma parmeters have a coefficient...\n")
@@ -511,9 +521,10 @@ class Optimization:
             fh.write("         with open('coff_' + i + '_guess.txt','r') as rfh:\n")
             fh.write("            current_guess['coff_'+i] = float(rfh.read())\n")
             fh.write('      except IOError:\n')
-            fh.write("         current_guess['coff_'+i] = 0.0\n")
-
-            fh.write("print current_guess\n")
+            fh.write("         current_guess['coff_'+i] = 1.01\n")
+            fh.write("# The __TEMPLATE__ value updates a header iteration counter\n")
+            fh.write("current_guess['__TEMPLATE__'] = str(iteration)\n")
+            fh.write("\n")
             fh.write("\n")
             fh.write("# create next iteration directory\n")
             fh.write("print 'Creating framework for iteration %i' % iteration\n")
@@ -525,10 +536,11 @@ class Optimization:
             fh.write("for line in content:\n")
             fh.write("   newline = line\n")
             fh.write("   for key in current_guess:\n")
-            fh.write("      newline = newline.replace(key, str(current_guess[key]))\n")
+            fh.write("      # note we add a leading space because we're looking for separate values\n")
+            fh.write("      newline = newline.replace(' ' + key, ' ' + str(current_guess[key]))\n")
             fh.write("   newlines.append(newline)\n")
             fh.write("\n")
-            fh.write("with open('%i/sytem.lt'%iteration,'w') as fh:\n")
+            fh.write("with open('%i/stMol.lt'%iteration,'w') as fh:\n")
             fh.write("   for line in newlines:\n")
             fh.write("      fh.write(line)\n")
             fh.write("\n")
@@ -539,108 +551,168 @@ class Optimization:
     def build_nvt_minimization_file(self):
         
         with open("run.in.min", 'w') as fh:
-            fh.write('#<><><><><><><><><><><><><><><><><><><><><><><><><><><><><>\n')
-            fh.write('#   \n')
-            fh.write('#   \n')
-            fh.write('# THIS CODE WAS DYNAMICALLY GENERATED BY CAMeLOT    \n')
-            fh.write('# Code generated at ' + str(time.strftime("%c")) + "\n")
-            fh.write('# Generated by CAMeLOT version ' + self.MolTemplateParameters['CAMELOT_VERSION'] + "\n")
-            fh.write('#   \n')
-            fh.write('#   \n')
-            fh.write('#<><><><><><><><><><><><><><><><><><><><><><><><><><><><><>\n')
+            writeline('#<><><><><><><><><><><><><><><><><><><><><><><><><><><><><>', fh)
+            writeline('#   ', fh)
+            writeline('#   ', fh)
+            writeline('# THIS CODE WAS DYNAMICALLY GENERATED BY CAMeLOT    ', fh)
+            writeline('# Code generated at ' + str(time.strftime("%c")), fh)
+            writeline('# Generated by CAMeLOT version ' + self.MolTemplateParameters['CAMELOT_VERSION'], fh)
+            writeline('#   ', fh)
+            writeline('#   ', fh)
+            writeline('# run.in.min', fh)
+            writeline('#<><><><><><><><><><><><><><><><><><><><><><><><><><><><><>', fh)
 
-            fh.write('# -------- CAMeLOT MINIMIZATION: ---------\n')
-            fh.write('# This file defines a CAMeLOT minimization file\n')
-            fh.write('\n')
-            fh.write('# -- Init section --\n')
-            fh.write('include system.in.init\n')
-            fh.write('\n')
-            fh.write('# -- Atom definition section -- \n')   
-            fh.write('read_data system.data\n')
-            fh.write('\n')
-            fh.write('# -- Settings Section --\n')        
-            fh.write('include system.in.settings\n')
-            fh.write('\n')
-            fh.write('# -- Run section --\n')
-            fh.write('dump     1 all custom 50 traj_min.lammpstrj id mol type x y z ix iy iz\n')
-            fh.write('minimize 1.0e-5 1.0e-7 10000 10000\n')
-            fh.write('write_restart  system_after_min.rst\n')
+            writeline('# -------- CAMeLOT MINIMIZATION: ---------', fh)
+            writeline('# This file defines a CAMeLOT minimization file', fh)
+            writeline('  ', fh)
+            writeline('# -- Init section --', fh)
+            writeline('include system.in.init', fh)
+            writeline('   ', fh)
+            writeline('# -- Atom definition section -- ', fh)   
+            writeline('read_data system.data', fh)
+            writeline('   ', fh)
+            writeline('# -- Settings Section --', fh)        
+            writeline('include system.in.settings', fh)
+            writeline('   ', fh)
+            writeline('# -- Run section --', fh)
+            writeline('dump     1 all custom 50 traj_min.lammpstrj id mol type x y z ix iy iz', fh)
+            writeline('minimize 1.0e-5 1.0e-7 10000 10000', fh)
+            writeline('write_restart  system_after_min.rst',fh)
+            writeline('   ', fh)
+            writeline('#------------- END OF MINIMIZATION FILE --------------', fh)
+
+
+    def build_system_setup_file(self):
+        
+        with open("system.lt", 'w') as fh:
+            writeline('#   ', fh)
+            writeline('#   ', fh)
+            writeline('# THIS CODE WAS DYNAMICALLY GENERATED BY CAMeLOT    ', fh)
+            writeline('# Code generated at ' + str(time.strftime("%c")), fh)
+            writeline('# Generated by CAMeLOT version ' + self.MolTemplateParameters['CAMELOT_VERSION'], fh)
+            writeline('#   ', fh)
+            writeline('#   ', fh)
+            writeline('# system.lt', fh)
+            writeline('#<><><><><><><><><><><><><><><><><><><><><><><><><><><><><>', fh)
+            writeline('   ', fh)
+            writeline('import "stMol.lt"', fh)
+            writeline('write_once("Data Boundary") {', fh)
+            writeline('  0 255.1 xlo xhi', fh)
+            writeline('  0 255.1 ylo yhi', fh)
+            writeline('  0 255.1 zlo zhi', fh)
+            writeline('}', fh)
+            writeline('   ',fh)
+            writeline('# Create a single peptide', fh)
+            writeline('peptide = new stMol [1].move(50.0, 100.0, 100.0) ', fh)
+            writeline('    ', fh)
+            writeline('#------------- END OF SYSTEM DEFINITION --------------', fh)
+      
 
     def build_nvt_simulation_code(self):
+        """
+        Function which constructs custom code which itself constructs a LAMMPS configuration file
+        needed to run a production NVT simulation.
+
+        Right now (0.1.0) we don't allow customization of the NVT configuration file, but the whole
+        point of creating a function which writes code which writes a configuration file is that
+        you can configure that second codeset to include custom variables as defined during the
+        initial setup. 
+
+        The point is, the 'generate_nvt.py' file which ends up getting created is a stand alone
+        custom file which will build a system-bespoke LAMMPS configuration file as a totally
+        independent script.
+
+        This means we can use it as part of the MATLAB drive GPBO procedure, where the MATLAB
+        code calls these generate_nvt.py script, and keep the idea of creating a system specific
+        simulation set for optimization.
+
+        """
 
 
-        ## build Langevin dampening parameter string
+
         with open('generate_nvt.py', 'w') as fh:
 
-            fh.write('import random\n')
-            fh.write('#<><><><><><><><><><><><><><><><><><><><><><><><><><><><><>\n')
-            fh.write('#   \n')
-            fh.write('#   \n')
-            fh.write('# THIS CODE WAS DYNAMICALLY GENERATED BY CAMeLOT    \n')
-            fh.write('# Code generated at ' + str(time.strftime("%c")) + "\n")
-            fh.write('# Generated by CAMeLOT version ' + self.MolTemplateParameters['CAMELOT_VERSION'] + "\n")
-            fh.write('#   \n')
-            fh.write('#   \n')
-            fh.write('# generate_nvt.py\n')
-            fh.write('# This code is to be executed in a iteration subdirectory, and will\n')
-            fh.write('# generate an NVT production simulation LAMMPS configuration file\n')
-            fh.write('# with a unique and random SEED\n')
-            fh.write('#<><><><><><><><><><><><><><><><><><><><><><><><><><><><><>\n')
+            writeline('import random', fh)
+            writeline('import time', fh)
+            writeline('#<><><><><><><><><><><><><><><><><><><><><><><><><><><><><>', fh)
+            writeline('#   ', fh)
+            writeline('#   ', fh)
+            writeline('# THIS CODE WAS DYNAMICALLY GENERATED BY CAMeLOT    ', fh)
+            writeline('# Code generated at ' + str(time.strftime("%c")), fh)
+            writeline('# Generated by CAMeLOT version ' + self.MolTemplateParameters['CAMELOT_VERSION'] + "", fh)
+            writeline('#', fh)
+            writeline('#', fh)
+            writeline('# generate_nvt.py', fh)
+            writeline('# This code is to be executed in the main simulation root subdirectory, and will', fh)
+            writeline('# generate an NVT production simulation LAMMPS configuration file', fh)
+            writeline('# with a unique and random SEED.', fh)
+            writeline('# That config. file should then be moved into an iteration subdirectory', fh)
+            writeline('# where the simulation should be run', fh)
+            writeline('#<><><><><><><><><><><><><><><><><><><><><><><><><><><><><>', fh)
+            writeline('', fh)
+            writeline('# >>>>>>>>>>>>>>>>>>>>>', fh)
+            writeline('# First up we need to define the Lagevin string...', fh)
+            writeline('', fh)
+            writeline("# Seed the PRNG using the OS' entropy pool", fh)
+            writeline("random.seed()", fh)
+            writeline('', fh)
+
+            writeline("# First read in the dampening parameters and construct", fh)
+            writeline("# a custom scale line", fh)                     
+            writeline("with open('%s', 'r') as fh:" % self.DAMP_PARAMS, fh)
+            writeline("   DPs = fh.readlines()", fh)            
+            writeline("DP = DPs[0].strip()", fh)
+            writeline(' ', fh)
+                            
+            writeline("TEMP = %3.3f"%self.TEMP, fh)
+            writeline("RAND = random.randint(0,10000)", fh)
+            writeline("dampline = 'fix fxlan  all langevin ' + str(TEMP) + ' ' + str(TEMP) + ' 2000.0 ' + str(RAND) + ' ' + DP", fh)
             
-            fh.write('\n')
-            fh.write("random.seed()\n")
-            fh.write('\n')
+            writeline("with open('run.in.nvt', 'w') as fh:", fh)
 
-            fh.write("# First read in the dampening parameters and construct\n")
-            fh.write("# a custom scale line\n")                     
-            fh.write("with open(%s, 'r') as fh:" % self.DAMP_PARAMS)
-            fh.write("   DPs = fh.readlines()")            
-            fh.write("DP = DPs[0].strip()")
-            fh.write('\n')
+            writeline("   fh.write('# -------- CAMeLOT NVT simulation: ---------\n')"   , fh)            
+            writeline("   fh.write('# This file defines a CAMeLOT simulation file,\n')", fh)
+            writeline("   fh.write('# and was generated by the generate_nvt.py script\n')", fh)
+            writeline("   fh.write('# at ' + str(time.strftime('%c')) +'\n')", fh)
+
+            writeline("   fh.write('\n')", fh)
                 
+            writeline("   fh.write('# -- Init section --\n')", fh)
+            writeline("   fh.write('include system.in.init\n')", fh)
+                
+            writeline("   fh.write('\n')", fh)
 
+            writeline("   fh.write('# -- Atom definition section -- \n')", fh)   
+            writeline("   fh.write('read_restart system_after_min.rst\n')", fh)
+
+            writeline("   fh.write('\n')", fh)
+                
+            writeline("   fh.write('# -- Settings Section --\n')    ", fh)    
+            writeline("   fh.write('include system.in.settings\n')", fh)
             
-            fh.write("TEMP = %3.3f\n"%self.TEMP)
-            fh.write("RAND = random.randint(0,10000)\n")
-            fh.write("dampline = 'fix fxlan  all langevin ' + TEMP + ' ' + TEMP + ' 2000.0 ' + RAND + ' ' + DP\n")
-            
-        
-            fh.write("with open(outname, 'w') as fh:\n")
-            fh.write("   fh.write('# -------- CAMeLOT NVT simulation: ---------\n')\n")
-            fh.write("   fh.write('# This file defines a CAMeLOT simulation file\n')\n")
-            fh.write("   fh.write('\n')\n")
+            writeline("   fh.write('\n')", fh)
                 
-            fh.write("   fh.write('# -- Init section --\n')\n")
-            fh.write("   fh.write('include system.in.init\n')\n")
-                
-            fh.write("   fh.write('\n')\n")
-
-            fh.write("   fh.write('# -- Atom definition section -- \n')\n")   
-            fh.write("   fh.write('read_restart system_after_min.rst\n')\n")
-
-            fh.write("   fh.write('\n')\n")
-                
-            fh.write("   fh.write('# -- Settings Section --\n')    \n")    
-            fh.write("   fh.write('include system.in.settings\n')\n")
-                
-            fh.write("   fh.write('# -- Run section --\n')\n")
-            fh.write("   fh.write('timestep        2.0\n')\n")
-            fh.write("   fh.write('dump            1 all dcd 1000 optimization.dcd\n')\n")
-            fh.write("   fh.write('neigh_modify    delay 1\n')\n")
-                
-            fh.write("   fh.write('# -- Langevin section --\n')\n")
-            fh.write("   fh.write('# To use Langevin dynamics in LAMMPS you need both fix langevin and fix nve.\n')\n")
-            fh.write("   fh.write('# (See http://lammps.sandia.gov/doc/fix_langevin.html for details.)\n')\n")
-            fh.write("   fh.write('%s\n'%dampline)\n")
-                
-            fh.write("   fh.write('fix fxnve all nve\n')\n")
-            fh.write("   fh.write('thermo_style    custom step temp pe etotal press vol epair ebond eangle edihed\n')\n")
-            fh.write("   fh.write('thermo          5000  # time interval for printing out thermo data\n')\n")
-            fh.write("   fh.write('restart         5000000  restart_nvt\n')\n")
-            fh.write("   fh.write('run		5000000\n')\n")
-            fh.write("   fh.write('write_restart  system_after_nvt.rst\n')\n")    
-            fh.write("   fh.write('\n')\n")
-            fh.write("   fh.write('\n')\n")
+            writeline("   fh.write('# -- Run section --\n')", fh)
+            writeline("   fh.write('timestep        2.0\n')", fh)
+            writeline("   fh.write('dump            1 all dcd 1000 optimization.dcd\n')", fh)
+            writeline("   fh.write('neigh_modify    delay 1\n')", fh)
+            writeline("   fh.write('\n')", fh)
+            writeline("   fh.write('# -- Langevin section --\n')", fh)
+            writeline("   fh.write('# To use Langevin dynamics in LAMMPS you need both fix langevin and fix nve.\n')", fh)
+            writeline("   fh.write('# (See http://lammps.sandia.gov/doc/fix_langevin.html for details.)\n')", fh)
+            writeline("   fh.write('\n')", fh)
+            writeline("   fh.write('%s\n'%dampline)", fh)                
+            writeline("   fh.write('fix fxnve all nve\n')", fh)
+            writeline("   fh.write('\n')", fh)
+            writeline("   ", fh)                
+            writeline("   fh.write('thermo_style    custom step temp pe etotal press vol epair ebond eangle edihed\n')", fh)
+            writeline("   fh.write('thermo          5000  # time interval for printing out thermo data\n')", fh)
+            writeline("   ", fh)                
+            writeline("   fh.write('restart         5000000  restart_nvt\n')", fh)
+            writeline("   fh.write('run		5000000\n')", fh)
+            writeline("   fh.write('write_restart  system_after_nvt.rst\n')", fh)    
+            writeline("   fh.write('\n')", fh)
+            writeline("   fh.write('\n')", fh)
       
 
 
@@ -658,9 +730,81 @@ class Optimization:
         Creates a file which runs the actual LAMMPS simulation
 
         """
-        pass
+        
+        with open('run_simulation.py', 'w') as fh:
+            writeline('from shutil import copy', fh)            
+            writeline('import os', fh)          
+            writeline('import subprocess', fh)          
+            writeline('#<><><><><><><><><><><><><><><><><><><><><><><><><><><><><>', fh)
+            writeline('#   ', fh)
+            writeline('#   ', fh)
+            writeline('# THIS CODE WAS DYNAMICALLY GENERATED BY CAMeLOT    ', fh)
+            writeline('# Code generated at ' + str(time.strftime("%c")), fh)
+            writeline('# Generated by CAMeLOT version ' + self.MolTemplateParameters['CAMELOT_VERSION'] + "", fh)
+            writeline('#', fh)
+            writeline('#', fh)
+            writeline('# run_simulation.py', fh)
+            writeline('#', fh)
+            writeline('# This code should be called by the MATLAB code cg_opt_func.m', fh)
+            writeline('# and does the following things', fh)
+            writeline('#', fh)
+            writeline('# 1) Creates a new run.nvt.in configuration file (new SEED)', fh)
+            writeline('#', fh)
+            writeline('# 2) Moves that run.nvt.in file into the next iteration directory, which', fh)
+            writeline('#    should already exist having been created by update_moltemplate.py, which', fh)
+            writeline('#    itself should have been called immedietly preceding this function', fh)
+            writeline('#', fh)
+            writeline('# 3) Copies the standard run.in.min into the next iteration directory', fh)
+            writeline('#', fh)
+            writeline('# 4) Copies the standard system.lt file into the next iteration directory', fh)
+            writeline('#', fh)
+            writeline('# 5) Runs moltemplate on the system', fh)
+            writeline('#', fh)
+            writeline('# 6) launch the LAMMPS simulation in that directory', fh)
+            writeline('#', fh)
+            writeline('# 7) blocks until completed, then returns', fh)          
+            writeline('#', fh)
+            writeline('#<><><><><><><><><><><><><><><><><><><><><><><><><><><><><>', fh)
+            writeline(' ', fh)
+            writeline("# Before we do that we have to figure out what iteration we're on", fh)
+            writeline("", fh)
+            writeline("try:", fh)
+            writeline("   with open('number_of_iterations.txt','r') as rfh:", fh)
+            writeline("      iteration = int(rfh.read())", fh)
+            writeline("except IOError:", fh)
+            writeline("   iteration = 0", fh)
+            writeline("", fh)
+            writeline('# 1) make run.nvt.in', fh)
+            writeline('os.system("%s generate_nvt.py")'%self.PYTHON_BIN, fh)
+            
+            writeline('# 2) move run.nvt.in', fh)
+            writeline("os.rename('run.in.nvt', '%i/run.in.nvt'%iteration)", fh)
 
-    def build_GaussianProcess_target_code(self):\
+            writeline('# 3) copy run.min.in', fh)
+            writeline("copy('run.in.min', '%i/run.in.min'%iteration)", fh)
+
+            writeline('# 4) copy system.lt', fh)
+            writeline("copy('system.lt', '%i/system.lt'%iteration)", fh)
+
+            writeline('# 5) run moltemplate', fh)
+            writeline('CWD = os.getcwd()', fh)
+            writeline('simdir = "%s/%i"%(CWD, iteration)',fh)
+            writeline("p = subprocess.Popen(['sh', '/work/alex/coarse_graining/CAMeLOT/moltemplate/moltemplate3.sh', 'system.lt'], cwd=simdir)", fh)
+            writeline("p.wait()",fh)
+            
+            
+            writeline("p = subprocess.Popen(['/home/kruff/LAMMPS/lammps-16Dec13/src/lmp_openmpi5', '-i', 'run.in.min'], cwd=simdir)", fh)
+            writeline("p.wait()",fh)
+            
+            writeline("p = subprocess.Popen(['/home/kruff/LAMMPS/lammps-16Dec13/src/lmp_openmpi5', '-i', 'run.in.nvt'], cwd=simdir)", fh)
+            writeline("p.wait()",fh)
+            
+
+
+            
+        
+
+    def build_GaussianProcess_target_code(self):
 
         pass
 
