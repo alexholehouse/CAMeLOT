@@ -53,3 +53,16 @@ def writeline(line, fh):
     """
     fh.write("%s\n" % repr(line)[1:-1])
 
+
+def build_logwriter(filename):
+    """
+    Returns a custom function which writes a log entry to 
+    
+
+    """
+    
+    def writelog(string, logtype='STATUS'):
+        with open(filename,'a') as fh:
+            fh.write("[%s]: %s\n" %(logtype, string))
+
+    return writelog

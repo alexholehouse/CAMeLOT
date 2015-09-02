@@ -80,7 +80,8 @@ class Simulations:
         self.DAMPENING_PARAMETER_FILE   = KeyFileObj.DAMPENING_PARAMETER_FILE 
         self.MASS_PARAMETER_FILE        = KeyFileObj.MASS_PARAMETER_FILE 
         self.INITIAL_XYZ_FILE           = KeyFileObj.INITIAL_XYZ_FILE
-        self.RES_RES_DISTANCES          = KeyFileObj.RES_RES_DISTANCES
+        self.RES_RES_DISTANCE_FILE      = KeyFileObj.RES_RES_DISTANCE_FILE
+        self.RES_RES_BINS               = KeyFileObj.RES_RES_BINS
         
         self.PLOT_BOND_HISTOGRAMS       = KeyFileObj.PLOT_BOND_HISTOGRAMS
         self.PLOT_ANG_HISTOGRAMS        = KeyFileObj.PLOT_ANG_HISTOGRAMS
@@ -124,8 +125,6 @@ class Simulations:
                 raise SimulationsException('Replica %i does not have the same number of residues as replica 1' % r)
         # =================================================================================================================
 
-
-
         # >> Determine if sequences are capped or not
         # =================================================================================================================
 
@@ -167,6 +166,19 @@ class Simulations:
         # =================================================================================================================
         self.charge_vector   = self.get_charge_vector()
         self.sequence_vector = self.get_sequence_vector()
+
+
+        # > Finally 
+        # =================================================================================================================
+        self.logwriter = build_logwriter(KeyFileObj.LOGFILE)
+            
+        
+        with open(KeyFileObj.LOGFILE, 'w') as fh:
+            fh.write('')
+
+        self.logwriter('CAMELOT initializing...')
+
+        
        
 
 
@@ -1015,7 +1027,7 @@ class Simulations:
                 fh.write('dihedral_coeff  @dihedral:Res%iRes%iRes%iRes%i bb13 %4.1f %4.1f %4.1f\n'  % (i,j,k,l, 0,0,0,))
 
 
-    def build_inter_residue_distance_vectors(self):
+    def build_interresidue_distances(self):
         """
         Function which generates a CSV file with the full inter-residue distances (i.e. a redundant set of data). Note
         this calculates ALL the distances...
@@ -1023,27 +1035,45 @@ class Simulations:
         """
         # to avoid building up a huge memory burden we write each residue by residue 
 
+        self.STDMessage("Generating inter-residue distances",msgType='PHASE')
+
         # remove any content which existed before
-        with open(self.RES_RES_DIS, 'w') as fh:
+        with open(self.RES_RES_DISTANCE_FILE, 'w') as fh:
             fh.write('')
+
+        
+            
+        self.logwriter('inter-residue distance bins:\n%s'%(str(self.RES_RES_BINS/10.0)))
+        
             
         # cycle through each residue
-        for res in self.resVector:
+        for res in self.resVector[0:-1]:
+            print "On res %i"%res
             
             # and the cycle through the same residues
-            for res2 in self.resVector:
+            for res2 in xrange(res+1, self.resVector[-1]+1):
+                print "----> On res2 %i"%res2
 
                 # and each over tmp
-                replica_distances = np.array([])
+                tmp_distances = np.array([])
                 for replica in self.replica_vector:
 
                     prot = replica.proteinTrajectoryList[0]
                     
-                    tmp_distances = np.concatenate((tmp_distances, prot_get_interResidueCOMDistance(res, res2)))
-                    
-                with open(self.RES_RES_DIS, 'a') as fh:
+                    tmp_distances = np.concatenate((tmp_distances, prot.get_interResidueCOMDistance(res, res2)))
+
+                # and build a histogram with the defined binsize
+            
+                # we we divide the bins by 10 because the distances are in nanometers...            
+                (vals, b) = np.histogram(tmp_distances, self.RES_RES_BINS/10.0)
+
+
+                # convert into pmf
+                vals = vals / float(np.sum(vals))                
+
+                with open(self.RES_RES_DISTANCE_FILE, 'a') as fh:
                     fh.write("%i, %i, " % (res, res2))
-                    np.savetxt(fh, tmp_distance, delimiter=',', newline=', ', fmt="%4.4f")
+                    np.savetxt(fh, vals, delimiter=',', newline=', ', fmt="%4.4f")
                     fh.write("\n")
 
 

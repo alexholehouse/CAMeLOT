@@ -3,6 +3,8 @@
 ## Pappu lab, Washington University in St. Louis
 ##
 
+import numpy as np
+
 from CAMeLOTExceptions import KeyFileException
 from CGParameterGroup import CGParameterGroup
 from configs import CAMELOT_VERSION
@@ -16,12 +18,14 @@ class KeyfileParser:
         keywordDict = self.parse_default(keyFileName)
 
         self.CAMELOT_VERSION             = CAMELOT_VERSION
+        self.LOGFILE                     = keywordDict['LOGFILE']
         
         self.TEMP                        = keywordDict['TEMP']
         
         self.SIMROOT                     = keywordDict['SIMROOT']
         self.PYTHON_BIN                  = keywordDict['PYTHON_BIN']
         self.LAMMPS_BIN                  = keywordDict['LAMMPS_BIN']
+        self.MATLAB_GP                   = keywordDict['MATLAB_GP_CODE_DIR']
 
         self.BOOTSTRAP_NUM_ITER          = keywordDict['BOOTSTRAP_NUM_ITER']
         self.BOOTSTRAP_SIZE              = keywordDict['BOOTSTRAP_SIZE']
@@ -45,8 +49,15 @@ class KeyfileParser:
         self.AAT_PARAMETER_FILE          = keywordDict['AAT_PARAMETER_FILE']
         self.AT_PARAMETER_FILE           = keywordDict['AT_PARAMETER_FILE']
         self.BB13_PARAMETER_FILE         = keywordDict['BB13_PARAMETER_FILE']
-        self.DAMPENING_PARAMETER_FILE    = keywordDict['DAMPENING_PARAMETER_FILE']                
-        self.RES_RES_DISTANCES           = keywordDict['RES_RES_DISTANCES']
+        self.DAMPENING_PARAMETER_FILE    = keywordDict['DAMPENING_PARAMETER_FILE']     
+
+        # inter-residue stuff
+        self.RES_RES_DISTANCE_FILE       = keywordDict['RES_RES_DISTANCE_FILE']
+
+        self.RES_RES_BIN_START           = keywordDict['RES_RES_BIN_START']
+        self.RES_RES_BIN_END             = keywordDict['RES_RES_BIN_END']
+        self.RES_RES_BIN_SIZE            = keywordDict['RES_RES_BIN_SIZE']
+        self.RES_RES_BINS                = np.arange(self.RES_RES_BIN_START, self.RES_RES_BIN_END, self.RES_RES_BIN_SIZE)
 
         # optimization keywords
         self.OPT_KAPPA                   = keywordDict['OPT_KAPPA']     
@@ -57,6 +68,13 @@ class KeyfileParser:
         self.OPT_MIXING                  = keywordDict['OPT_MIXING']    
         self.INITIAL_LJ_PARAMS_FILE      = keywordDict['INITIAL_LJ_PARAMS_FILE']
         self.OPT_ITERATIONS              = keywordDict['OPT_ITERATIONS']
+
+        # simulation keyword
+        
+        self.SIM_NSTEPS                  = keywordDict['SIM_NSTEPS'] 
+        self.SIM_DCD_OUT                 = keywordDict['SIM_DCD_OUT'] 
+        self.SIM_THERMO_OUT              = keywordDict['SIM_THERMO_OUT']      
+        
 
         # coarse grained alphabet, bounds, names and which parameters
         # are to be optimized
@@ -96,14 +114,16 @@ class KeyfileParser:
     #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>                   
     def parse_default(self, keyFileName):
         keywordDict = {}
-        #keywordDict['SIMROOT'] = '/work/alex/SPA/SPA_100_jedd/SPA100'
+        keywordDict['SIMROOT'] = '/work/alex/SPA/SPA_100_jedd/SPA100'
 
-        keywordDict['TEMP']       = 315.0
+        keywordDict['TEMP']       = 298.0
 
         keywordDict['PYTHON_BIN'] = '/opt/pappuPython/bin/python'
         keywordDict['LAMMPS_BIN'] = '/home/kruff/LAMMPS/lammps-16Dec13/src/lmp_openmpi5'
+        keywordDict['LOGFILE']    = 'camelot.log'
+        keywordDict['MATLAB_GP_CODE_DIR'] = '/home/kruff/bin/matlab/gpml/'
         
-        keywordDict['SIMROOT'] = '/work/kruff/N17permutants/09_2014_new/Nt17Qn/monomer/Q40'
+        #keywordDict['SIMROOT'] = '/work/kruff/N17permutants/09_2014_new/Nt17Qn/monomer/Q40'
         
         keywordDict['BOOTSTRAP_NUM_ITER'] = 20
         keywordDict['BOOTSTRAP_SIZE'] = 1000
@@ -114,8 +134,8 @@ class KeyfileParser:
         keywordDict['ANGLE_DEFINITION_FILE'] = 'ANGLE_DEF.txt'
         keywordDict['ANGLE_PARAMETER_FILE'] = 'ANGLE_PARAMS.txt'
 
-        keywordDict['PLOT_BOND_HISTOGRAMS'] = False
-        keywordDict['PLOT_ANG_HISTOGRAMS'] = False
+        keywordDict['PLOT_BOND_HISTOGRAMS'] = True
+        keywordDict['PLOT_ANG_HISTOGRAMS'] = True
 
         keywordDict['MBT_PARAMETER_FILE']  = 'MBT_PARAMS.txt'
         keywordDict['EBT_PARAMETER_FILE']  = 'EBT_PARAMS.txt'
@@ -125,12 +145,17 @@ class KeyfileParser:
         keywordDict['DAMPENING_PARAMETER_FILE'] = 'DAMP_PARAMS.txt'
         keywordDict['MASS_PARAMETER_FILE'] = 'MASS_PARAMS.txt'
         keywordDict['INITIAL_XYZ_FILE']    = 'INITIAL_POS.txt'
-        keywordDict['RES_RES_DISTANCES']   = 'RES_RES_DIS.txt'
 
-        keywordDict['TRAJECTORY_FILE'] = "N_005___traj.xtc"
-        #keywordDict['TRAJECTORY_FILE'] = "__traj.xtc"
-        keywordDict['PBD_FILE'] = "N_005___START.pdb"
-        #keywordDict['PBD_FILE'] = "__START.pdb"
+        # inter-residue files and binning 
+        keywordDict['RES_RES_DISTANCE_FILE']   = 'RES_RES_DIS.txt'
+        keywordDict['RES_RES_BIN_START']   = 0.0
+        keywordDict['RES_RES_BIN_END']     = 100.0
+        keywordDict['RES_RES_BIN_SIZE']    = 1.0
+
+        #keywordDict['TRAJECTORY_FILE'] = "N_005___traj.xtc"
+        keywordDict['TRAJECTORY_FILE'] = "__traj.xtc"
+        #keywordDict['PBD_FILE'] = "N_005___START.pdb"
+        keywordDict['PBD_FILE'] = "__START.pdb"
 
         keywordDict['INITIAL_LJ_PARAMS_FILE'] = 'INITIAL_LJ_PARAMS.txt'
 
@@ -143,7 +168,12 @@ class KeyfileParser:
         keywordDict['OPT_MOLTEMPLATE_FILE']  = 'Moltemplate_config.lt'
         keywordDict['OPT_DIELECT']           = float(80)
         keywordDict['OPT_MIXING']            = 'arithmetic'
-        keywordDict['OPT_ITERATIONS']        = 500
+        keywordDict['OPT_ITERATIONS']        = 50
+
+
+        keywordDict['SIM_NSTEPS']            = 5000000
+        keywordDict['SIM_DCD_OUT']           = 10000
+        keywordDict['SIM_THERMO_OUT']        = 5000     
         
 
         # CG alphabet defined here
@@ -166,6 +196,7 @@ class KeyfileParser:
 
         keywordDict['CG_GROUPS'] = []
 
+        """
         line="residues:KRED, name:chg, eps_lb:0.2, eps_ub:2.0, sig_lb:8.5, sig_ub:10.5"
         keywordDict['CG_GROUPS'].append(CGParameterGroup(line))
 
@@ -174,5 +205,22 @@ class KeyfileParser:
 
         line="residues:APGSTC, name:weak, eps_lb:0.01, eps_ub:0.3"
         keywordDict['CG_GROUPS'].append(CGParameterGroup(line))
+        """
+
+        line="residues:KR, name:pos, eps_lb:0.2, eps_ub:3.0, sig_lb:7.5, sig_ub:11.5"
+        keywordDict['CG_GROUPS'].append(CGParameterGroup(line))
+
+        line="residues:ED, name:neg, eps_lb:0.2, eps_ub:3.0, sig_lb:7.5, sig_ub:11.5"
+        keywordDict['CG_GROUPS'].append(CGParameterGroup(line))
+
+        line="residues:NGHST, name:polar, eps_lb:0.1, eps_ub:0.5"
+        keywordDict['CG_GROUPS'].append(CGParameterGroup(line))
+
+        line="residues:IMVY, name:hydro, eps_lb:0.1, eps_ub:0.5"
+        keywordDict['CG_GROUPS'].append(CGParameterGroup(line))
+
+        line="residues:P, name:pro, eps_lb:0.1, eps_ub:0.5"
+        keywordDict['CG_GROUPS'].append(CGParameterGroup(line))
+
 
         return keywordDict
