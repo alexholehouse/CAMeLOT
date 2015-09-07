@@ -4,3 +4,17 @@
 plots/
 *.png
 *.lt
+*guess*
+camelot.log
+cg_opt.m
+cg_opt_func.m
+evaluate_simulation.m
+generate_nvt.py
+camelot.log
+trace.mat
+update_moltemplate.py
+run_simulation.py
+moltemplate/
+run.in.min
+run.in.nvt
+[1..100]/

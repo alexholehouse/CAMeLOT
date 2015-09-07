@@ -56,8 +56,16 @@ class Optimization:
         self.TEMP           = keyFileObj.TEMP
         self.DAMP_PARAMS    = keyFileObj.DAMPENING_PARAMETER_FILE
 
+        # get some simulation parameters
+        self.SIM_DCD_OUT        = keyFileObj.SIM_DCD_OUT
+        self.SIM_NSTEPS         = keyFileObj.SIM_NSTEPS
+        self.SIM_THERMO_OUT     = keyFileObj.SIM_THERMO_OUT
+        self.SIM_EQUIL_FRACTION = keyFileObj.SIM_EQUIL_FRACTION
+
         # some other relevant information
-        self.RES_RES_BIN_SIZE = keyFileObj.RES_RES_BIN_SIZE 
+        self.RES_RES_BIN_START     = keyFileObj.RES_RES_BIN_START
+        self.RES_RES_BIN_END     = keyFileObj.RES_RES_BIN_END
+        self.RES_RES_BIN_SIZE      = keyFileObj.RES_RES_BIN_SIZE 
         self.RES_RES_DISTANCE_FILE = keyFileObj.RES_RES_DISTANCE_FILE
 
         # build a mapping residue to group
@@ -484,6 +492,14 @@ class Optimization:
             writeline("  % this line will run custom generated script which will compares", fh)
             writeline("  % the CG simulation against the all atom simulation ", fh)
             writeline("  overlap = evaluate_simulation(iteration, %i)" % len(self.sequence_vector), fh)
+            writeline("", fh)
+            writeline("  % Save the current overlap score to a textfile for convenience ", fh)
+            writeline("  fid = fopen('goodness.txt', 'wt');", fh)
+            writeline("  fprintf(fid, '%i   %4.2f\n', iteration, overlap);", fh)
+            writeline("  fclose(fid);", fh)
+            writeline('    ', fh)
+            writeline('% END OF FILE --------------------------------', fh)
+            
             
 
             
@@ -725,7 +741,7 @@ class Optimization:
                 
             writeline("   fh.write('# -- Run section --\n')", fh)
             writeline("   fh.write('timestep        2.0\n')", fh)
-            writeline("   fh.write('dump            1 all dcd %i optimization.dcd\n')"%self.SIM_DCD_OUT, fh)
+            writeline("   fh.write('dump            1 all dcd %i optimization.dcd\n')" % self.SIM_DCD_OUT, fh)
             writeline("   fh.write('neigh_modify    delay 1\n')", fh)
             writeline("   fh.write('\n')", fh)
             writeline("   fh.write('# -- Langevin section --\n')", fh)
@@ -857,8 +873,8 @@ class Optimization:
             writeline('% box length', fh)
             writeline('bl = [255.1, 255.1, 255.1];', fh)
             writeline('      ', fh)
-            writeline('% remove the first 1e5 steps', fh)
-            writeline('equil = 101;', fh)
+            writeline('% discard the first 20% as equlibration', fh)
+            writeline('equil = %i ;'%(self.SIM_EQUIL_FRACTION*(self.SIM_NSTEPS/self.SIM_DCD_OUT)), fh)
             writeline('binwidth=%i;'%(self.RES_RES_BIN_SIZE), fh)
             writeline('binhalf=binwidth/2;', fh)
             writeline('      ', fh)
@@ -890,7 +906,7 @@ class Optimization:
             writeline('        ', fh)
             writeline("        % note we have to offset the bin edges because numpy and matlab have different", fh)
             writeline("        % interepetations of how the edges should be used...", fh)
-            writeline("        vals = histc(raw_distance{i,j},0:1:100-(2*binwidth))';", fh)
+            writeline("        vals = histc(raw_distance{i,j},%i:%i:%i-(2*binwidth))';" % (self.RES_RES_BIN_START, self.RES_RES_BIN_SIZE, self.RES_RES_BIN_END), fh)
             writeline('        vals = vals./sum(vals);', fh)
             writeline('        ', fh)
             writeline('        CG_histogram{i,j}  =  vals;', fh)

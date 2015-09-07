@@ -73,7 +73,8 @@ class KeyfileParser:
         
         self.SIM_NSTEPS                  = keywordDict['SIM_NSTEPS'] 
         self.SIM_DCD_OUT                 = keywordDict['SIM_DCD_OUT'] 
-        self.SIM_THERMO_OUT              = keywordDict['SIM_THERMO_OUT']      
+        self.SIM_THERMO_OUT              = keywordDict['SIM_THERMO_OUT']   
+        self.SIM_EQUIL_FRACTION          = keywordDict['SIM_EQUIL_FRACTION'] 
         
 
         # coarse grained alphabet, bounds, names and which parameters
@@ -86,6 +87,8 @@ class KeyfileParser:
         # valid before we start anything...
 
         self.check_CGGroups_are_unique()
+
+        #self.check_integers(
 
 
 
@@ -149,7 +152,7 @@ class KeyfileParser:
         # inter-residue files and binning 
         keywordDict['RES_RES_DISTANCE_FILE']   = 'RES_RES_DIS.txt'
         keywordDict['RES_RES_BIN_START']   = 0.0
-        keywordDict['RES_RES_BIN_END']     = 100.0
+        keywordDict['RES_RES_BIN_END']     = 180.0
         keywordDict['RES_RES_BIN_SIZE']    = 1.0
 
         #keywordDict['TRAJECTORY_FILE'] = "N_005___traj.xtc"
@@ -171,9 +174,10 @@ class KeyfileParser:
         keywordDict['OPT_ITERATIONS']        = 50
 
 
-        keywordDict['SIM_NSTEPS']            = 5000000
+        keywordDict['SIM_NSTEPS']            = 2000000
         keywordDict['SIM_DCD_OUT']           = 10000
-        keywordDict['SIM_THERMO_OUT']        = 5000     
+        keywordDict['SIM_THERMO_OUT']        = 5000   
+        keywordDict['SIM_EQUIL_FRACTION']    = 0.2 
         
 
         # CG alphabet defined here
