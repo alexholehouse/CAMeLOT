@@ -32,6 +32,7 @@ class KeyfileParser:
 
         self.PLOT_BOND_HISTOGRAMS        = keywordDict['PLOT_BOND_HISTOGRAMS']
         self.PLOT_ANG_HISTOGRAMS         = keywordDict['PLOT_ANG_HISTOGRAMS']
+        self.PLOT_DIHEDRAL_HISTOGRAMS    = keywordDict['PLOT_DIHEDRAL_HISTOGRAMS']
         
         self.INITIAL_XYZ_FILE            = keywordDict['INITIAL_XYZ_FILE']
         self.MASS_PARAMETER_FILE         = keywordDict['MASS_PARAMETER_FILE']
@@ -139,6 +140,7 @@ class KeyfileParser:
 
         keywordDict['PLOT_BOND_HISTOGRAMS'] = True
         keywordDict['PLOT_ANG_HISTOGRAMS'] = True
+        keywordDict['PLOT_DIHEDRAL_HISTOGRAMS'] = True
 
         keywordDict['MBT_PARAMETER_FILE']  = 'MBT_PARAMS.txt'
         keywordDict['EBT_PARAMETER_FILE']  = 'EBT_PARAMS.txt'

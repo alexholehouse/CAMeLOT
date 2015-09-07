@@ -85,6 +85,7 @@ class Simulations:
         
         self.PLOT_BOND_HISTOGRAMS       = KeyFileObj.PLOT_BOND_HISTOGRAMS
         self.PLOT_ANG_HISTOGRAMS        = KeyFileObj.PLOT_ANG_HISTOGRAMS
+        self.PLOT_DIHEDRAL_HISTOGRAMS   = KeyFileObj.PLOT_DIHEDRAL_HISTOGRAMS
 
         self.TRAJECTORY_FILE            = KeyFileObj.TRAJECTORY_FILE
         self.PDB_FILE                   = KeyFileObj.PDB_FILE
@@ -933,13 +934,14 @@ class Simulations:
             params_by_res.append(params)
 
             # plot fit (note need to make this optional!)
-            plt.plot(bin_centers,threeParamFunct(bin_centers, params[0],params[1],params[2],params[3],params[4],params[5],))
-            plt.plot(bin_centers, vals_EN)
-            plt.title("Theta angle fit (goodness = %4.2f" % goodness)
-            plt.xlabel('Angle (degrees)')
-            plt.ylabel('Probability')
-            plt.savefig('plots/DIHEDRAL_res_%i.png'%(i),dpi=150)
-            plt.close()
+            if self.PLOT_DIHEDRAL_HISTOGRAMS:
+                plt.plot(bin_centers,threeParamFunct(bin_centers, params[0],params[1],params[2],params[3],params[4],params[5],))
+                plt.plot(bin_centers, vals_EN)
+                plt.title("Theta angle fit (goodness = %4.2f" % goodness)
+                plt.xlabel('Angle (degrees)')
+                plt.ylabel('Probability')
+                plt.savefig('plots/DIHEDRAL_res_%i.png'%(i),dpi=150)
+                plt.close()
         
         ## ----------------------------------------------------------------------------
         ## STAGE 3 - Write the derived parameters out to file
