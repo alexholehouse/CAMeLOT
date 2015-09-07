@@ -17,4 +17,3 @@ run_simulation.py
 moltemplate/
 run.in.min
 run.in.nvt
-[1..100]/
