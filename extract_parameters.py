@@ -91,6 +91,12 @@ class Simulations:
         self.PLOT_ANG_HISTOGRAMS        = KeyFileObj.PLOT_ANG_HISTOGRAMS
         self.PLOT_DIHEDRAL_HISTOGRAMS   = KeyFileObj.PLOT_DIHEDRAL_HISTOGRAMS
 
+        # create the 'plots' directory if it doesn't exist
+        if self.PLOT_ANG_HISTOGRAMS or self.PLOT_BOND_HISTOGRAMS or self.PLOT_DIHEDRAL_HISTOGRAMS:
+            if not os.path.exists('plots'):
+                os.makedirs('plots')
+
+
         self.TRAJECTORY_FILE            = KeyFileObj.TRAJECTORY_FILE
         self.PDB_FILE                   = KeyFileObj.PDB_FILE
 
