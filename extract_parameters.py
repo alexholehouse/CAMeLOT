@@ -1,23 +1,27 @@
-## CAMeLOT V 0.1.0
+## CAMeLOT V 0.1.1
 ## Coarse-grained simulations Aided by Machine Learning, Optimization and Training
 ## Pappu lab, Washington University in St. Louis
 ##
 ## test
 
 
-import CTraj.CTTrajectory as CT
-import CTraj.CTExceptions as CTException
 import os
 import sys
 import itertools
-import numpy as np
-import mdtraj as md
-from scipy.stats import norm
-import matplotlib.pyplot as plt
-import scipy.ndimage
-
 from utils import *
+
+import numpy as np
 from numpy.core.umath_tests import inner1d
+from scipy.stats import norm
+import scipy.ndimage
+import matplotlib.pyplot as plt
+import mdtraj as md
+
+import CTraj.CTTrajectory as CT
+import CTraj.CTExceptions as CTException
+
+#from GROMACS_CAMELOT import GMXTraj 
+#from GROMACS_CAMELOT import GMXTrajException
 
 from CAMeLOTExceptions import SimulationsException
 from keyfileParser import KeyfileParser
@@ -93,8 +97,7 @@ class Simulations:
         # >> Determine the number of replica based on the number of directories (1...n)
         # =================================================================================================================
         self.n_replica = self.get_number_of_replicas()
-
-
+        
         
         # >> Read in all replicas, and ensure we have at least 1!
         # =================================================================================================================
@@ -103,8 +106,9 @@ class Simulations:
         
         self.STDMessage("Reading in trajectories",msgType='PHASE')
         for i in xrange(1,self.n_replica+1):
+            
             self.replica_vector.append(CT.CTTrajectory('%s/%i/%s'%(self.SIMROOT,i, self.TRAJECTORY_FILE),'%s/%i/%s'%(self.SIMROOT,i, self.PDB_FILE)))
-        
+                    
         if len(self.replica_vector) == 0:
             raise SimulationsException('Failed to find any simulations at %s. Ensure simulations are located in monotonically incremented directories and __START.pdb and __traj.xtc files are found in both directories' % self.SIMROOT)
         # =================================================================================================================
@@ -138,8 +142,8 @@ class Simulations:
         else:
             self.start_resid = 0
 
-        # if final res is NME (the end_resid is INCLUSIVE - so
-        if exampleProtein.get_aminoAcidSequence()[-1].split('-')[0] == 'NME':            
+        # if final res is NME (the end_resid is INCLUSIVE - so (NME 
+        if exampleProtein.get_aminoAcidSequence()[-1].split('-')[0] == 'NME' or exampleProtein.get_aminoAcidSequence()[-1].split('-')[0] == 'NAC':
             self.end_resid   = len(exampleProtein.get_aminoAcidSequence()) - 2
         else:
             self.end_resid   = len(exampleProtein.get_aminoAcidSequence()) - 1 

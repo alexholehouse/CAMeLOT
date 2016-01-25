@@ -1,7 +1,18 @@
-## CAMeLOT V 0.1.0
+## CAMeLOT V 0.1.1
 ## Coarse-grained simulations Aided by Machine Learning, Optimization and Training
 ## Pappu lab, Washington University in St. Louis
 ##
+## Guide to adding new keywords
+## *********************************
+## 
+## Adding new keywords to CAMELOT allows additional functionality to be added 
+##
+## 1. Add the keyword to the expected_keywords list
+##
+## 2. If the keyword cannot have a default value add to the required_keywords list. ELSE define a default
+##    value in 
+##
+## 3. Add to the appropriate place in the parse_keyfile method (i.e. if its a string add to the string)
 
 import numpy as np
 
@@ -32,21 +43,9 @@ def remove_comments(line):
 
 class KeyfileParser:
 
-
-
-
     #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>   
     #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>   
-    def __init__(self, keyFileName):
-
-
-
-
-
-
-
-
-
+    def __init__(self, keyfile_name):
 
         # expected keywords contains a list of possible keywords which can be read form the keyfile. Importantly if these
         # keywords are *not* included then they are set to their default values
@@ -56,49 +55,33 @@ class KeyfileParser:
                                   'ANGLE_PARAMETER_FILE', 'TRAJECTORY_FILE', 'PBD_FILE', 'MBT_PARAMETER_FILE', 'EBT_PARAMETER_FILE', 'AAT_PARAMETER_FILE', 
                                   'AT_PARAMETER_FILE', 'BB13_PARAMETER_FILE', 'DAMPENING_PARAMETER_FILE', 'RES_RES_DISTANCE_FILE', 'RES_RES_BIN_START', 'RES_RES_BIN_END', 
                                   'RES_RES_BIN_SIZE', 'OPT_KAPPA', 'OPT_LJ_CUTOFF', 'OPT_COUL_CUTOFF', 'OPT_MOLTEMPLATE_FILE', 'OPT_DIELECT', 'OPT_MIXING', 
-                                  'INITIAL_LJ_PARAMS_FILE', 'OPT_ITERATIONS', 'SIM_NSTEPS' , 'SIM_DCD_OUT' , 'SIM_THERMO_OUT'   , 'SIM_EQUIL_FRACTION' , 'CG_GROUPS']
-                                  
-                                  
-    ]
-
+                                  'INITIAL_LJ_PARAMS_FILE', 'OPT_ITERATIONS', 'SIM_NSTEPS', 'SIM_DCD_OUT', 'SIM_THERMO_OUT', 'SIM_EQUIL_FRACTION' , 'CG_GROUPS',
+                                  'DISABLE_SANITY_CHECKS', 'SIMULATION_ENGINE']
+        
         # required keywords are those which MUST be included in the keyfile - i.e. CAMELOT can't set default values for these
         # keywords. Note that required_keywords is a subset of expected_keywords
         self.required_keywords = ['TEMP', 'SIMROOT', 'PYTHON_BIN', 'LAMMPS_BIN', 'MATLAB_GP_CODE_DIR', 'BOOTSTRAP_NUM_ITER', 'BOOTSTRAP_SIZE',                                 
                                   'RES_RES_BIN_START', 'RES_RES_BIN_END', 'RES_RES_BIN_SIZE', 'OPT_KAPPA', 'OPT_LJ_CUTOFF', 'OPT_COUL_CUTOFF', 'OPT_DIELECT', 
-                                  'OPT_ITERATIONS', 'SIM_NSTEPS', 'SIM_EQUIL_FRACTION' , 'CG_GROUPS']
-
-
+                                  'OPT_ITERATIONS', 'SIM_NSTEPS', 'SIM_DCD_OUT', 'SIM_THERMO_OUT', 'SIM_EQUIL_FRACTION', 'CG_GROUPS', 'SIMULATION_ENGINE']
+    
+        # zero out a couple of key dictionaries
         self.keyword_lookup = {}
         self.DEFAULTS = {}
-
-        # parse the keyfile
-        self.parse(filename)      
-
-        # read the default values into a dictionary
-        keywordDict = self.parse_default(keyFileName)
         
+        # prepare default values
+        default_arguments = self.parse_default()
 
-        # check all the required keywords were set
-        for keyword in self.required_keywords:
-            if keyword not in self.keyword_lookup:
-                raise KeyFileException('The required keyword [%s] was not found in the keyfile and must be included. Please correct your keyfile and retry' % putative_keyword)
+        # set keyfile keywords
+        self.parse(keyfile_name)
 
-                
-        self.assign_missing_values_to_defaults(keywordDict)
-
-        self.
-                
-
-
-        self.assign_default()     # assigns default values to the internal system (though not YET to this keyfile)
-        self.set_defaults()       # finally any values missing from the keyfile get set to the default values
-        self.run_sanity_checks()
+        # checks that all our ducks are in a row re keywords
+        self.sanity_check_keywords_and_set_defaults(default_arguments)
 
         
-        
-
+        # Assign keywords to object variables        
         self.CAMELOT_VERSION             = CAMELOT_VERSION
         self.LOGFILE                     = self.keyword_lookup['LOGFILE']
+        self.SIMULATION_ENGINE           = self.keyword_lookup['SIMULATION_ENGINE']
         
         self.TEMP                        = self.keyword_lookup['TEMP']
         
@@ -150,14 +133,12 @@ class KeyfileParser:
         self.INITIAL_LJ_PARAMS_FILE      = self.keyword_lookup['INITIAL_LJ_PARAMS_FILE']
         self.OPT_ITERATIONS              = self.keyword_lookup['OPT_ITERATIONS']
 
-        # simulation keyword
-        
+        # simulation keyword        
         self.SIM_NSTEPS                  = self.keyword_lookup['SIM_NSTEPS'] 
         self.SIM_DCD_OUT                 = self.keyword_lookup['SIM_DCD_OUT'] 
         self.SIM_THERMO_OUT              = self.keyword_lookup['SIM_THERMO_OUT']   
         self.SIM_EQUIL_FRACTION          = self.keyword_lookup['SIM_EQUIL_FRACTION'] 
         
-
         # coarse grained alphabet, bounds, names and which parameters
         # are to be optimized
         self.CG_GROUPS                   = self.keyword_lookup['CG_GROUPS']
@@ -166,11 +147,56 @@ class KeyfileParser:
         # checks which may be important. One can imagine adding a large set of 
         # sanitation checks here such that we know all the input parameters are
         # valid before we start anything...
+        
+        # perform any/all sanity checks needed (i.e. checking files exits,
+        # directories are writable, basically everything we might need to ensure the
+        # CG procedure will work
+        self.run_sanity_checks()
 
+        
+        
+
+    def run_sanity_checks(self):
+        
+        # check CG groups
         self.check_CGGroups_are_unique()
 
+        # check specific keyword variables
+        if self.SIMULATION_ENGINE not in ['GROMACS', 'CAMPARI']:
+            raise KeyFileException('Unexpected atomistic simulation engine used - expected GROMACS or CAMPARI but got %s'%self.SIMULATION_ENGINE)
+        
+    
 
+    def sanity_check_keywords_and_set_defaults(self, default_arguments):
+        """
+        Simple check to make sure that we're not missing any key keywords. Having
+        performed the relevant check we then assign default keywords to the remaining
+        undefined keywords in this specific run.
 
+        Does not return anything but throws an exception if anything seems off.
+        
+
+        """
+        # check we have all the required keywords
+        for keyword in self.required_keywords:
+            if keyword not in self.keyword_lookup:
+                raise KeyFileException('The required keyword [%s] was not found in the keyfile and must be included. Please correct your keyfile and retry' % keyword)
+
+        
+        # check all the expected keywords are defined in either the default or parsed keyword list
+        for keyword in self.expected_keywords:
+            if (keyword not in self.keyword_lookup) and (keyword not in default_arguments):
+                raise KeyFileException('The expected keyword [%s] was not found in either keyfile and there was no pre-defined default value. Please correct your keyfile and retry' % keyword)
+                
+        # finally safe in the knoweldge that everything is accounted for set the default values
+        for keyword in self.expected_keywords:
+            if (keyword not in self.keyword_lookup):
+                self.keyword_lookup[keyword] = default_arguments[keyword]
+
+        # final check to make sure we match the expected and actual number
+        if not len(self.keyword_lookup) == len(self.expected_keywords):
+            raise KeyFileException('The total read keywords does not match the expected number (%i expected, but %i found)' %(len(self.expected_keywords),len(self.keyword_lookup)))
+            
 
 
 
@@ -190,8 +216,7 @@ class KeyfileParser:
 
         """
 
-
-        keywordDict['CG_GROUPS'] = []
+        self.keyword_lookup['CG_GROUPS'] = []
         
         
         # read the keyfile lines
@@ -244,7 +269,7 @@ class KeyfileParser:
 
                 # float keywords
                 elif putative_keyword in ['TEMP', 'RES_RES_BIN_START', 'RES_RES_BIN_END', 'RES_RES_BIN_SIZE', 'OPT_KAPPA', 'OPT_LJ_CUTOFF', 'OPT_COUL_CUTOFF', 
-                                          'OPT_DIELECT',]:            
+                                          'OPT_DIELECT', 'SIM_EQUIL_FRACTION']:            
                     self.keyword_lookup[putative_keyword] = float(putative_value)
 
                 # string keywords
@@ -252,11 +277,16 @@ class KeyfileParser:
                                           'BOND_PARAMETER_FILE', 'DIHEDRAL_DEFINITION_FILE', 'DIHEDRAL_PARAMETER_FILE', 'ANGLE_DEFINITION_FILE',
                                           'ANGLE_PARAMETER_FILE','MBT_PARAMETER_FILE', 'EBT_PARAMETER_FILE', 'AAT_PARAMETER_FILE', 'AT_PARAMETER_FILE',
                                           'BB13_PARAMETER_FILE', 'DAMPENING_PARAMETER_FILE', 'MASS_PARAMETER_FILE', 'INITIAL_XYZ_FILE','RES_RES_DISTANCE_FILE',
-                                          'TRAJECTORY_FILE', 'PBD_FILE', 'INITIAL_LJ_PARAMS_FILE','OPT_MOLTEMPLATE_FILE', 'OPT_MIXING']:
+                                          'TRAJECTORY_FILE', 'PBD_FILE', 'INITIAL_LJ_PARAMS_FILE','OPT_MOLTEMPLATE_FILE', 'OPT_MIXING', 'SIMULATION_ENGINE']:
+
+                    # for case insensitive keywords set value to upper
+                    if putative_keyword in ['SIMULATION_ENGINE']:
+                        putative_value = putative_value.upper()
+                        
                     self.keyword_lookup[putative_keyword] = str(putative_value)
 
                 # boolean keywords
-                elif putative_keyword in ['PLOT_BOND_HISTOGRAMS', 'PLOT_ANG_HISTOGRAMS', 'PLOT_DIHEDRAL_HISTOGRAMS' ]:            
+                elif putative_keyword in ['PLOT_BOND_HISTOGRAMS', 'PLOT_ANG_HISTOGRAMS', 'PLOT_DIHEDRAL_HISTOGRAMS', 'DISABLE_SANITY_CHECKS']:            
                     self.keyword_lookup[putative_keyword] = bool(putative_value)
                                                                
             else:
@@ -283,12 +313,80 @@ class KeyfileParser:
                 raise KeyFileException('One of the CGGroup names defined in the key file [%s] was not unique. Please ensure all names are unique or you will FSU' % group.name)
             else:
                 names.append(group.name)
-            
 
+
+    #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>   
+    #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>                   
+    def assign_missing_values_to_defaults(defaults):
+        """
+        Function which will scan through the self.keyword_lookup dictionary and determine if non-required keywords have not yet
+        been set - those which have not been set 
+
+
+        """
+        pass
+
+    
+
+    def parse_default(self):
+        """
+        Builds a dictionary where non-required keywords are set to their default value
+
+        """
+
+        # initialize
+        keywordDict = {}
+
+        # LOGFILE
+        keywordDict['LOGFILE']                  = 'camelot.log'        
+
+        # Molecular Mechanics filenames
+        keywordDict['BOND_DEFINITION_FILE']     = 'BONDED_DEF.txt'
+        keywordDict['BOND_PARAMETER_FILE']      = 'BONDED_PARAMS.txt'
+        keywordDict['DIHEDRAL_DEFINITION_FILE'] = 'DIHEDRAL_DEF.txt'
+        keywordDict['DIHEDRAL_PARAMETER_FILE']  = 'DIHEDRAL_PARAMS.txt'
+        keywordDict['ANGLE_DEFINITION_FILE']    = 'ANGLE_DEF.txt'
+        keywordDict['ANGLE_PARAMETER_FILE']     = 'ANGLE_PARAMS.txt'
+        keywordDict['MBT_PARAMETER_FILE']       = 'MBT_PARAMS.txt'
+        keywordDict['EBT_PARAMETER_FILE']       = 'EBT_PARAMS.txt'
+        keywordDict['AAT_PARAMETER_FILE']       = 'AAT_PARAMS.txt'
+        keywordDict['AT_PARAMETER_FILE']        = 'AT_PARAMS.txt'
+        keywordDict['BB13_PARAMETER_FILE']      = 'BB13_PARAMS.txt'
+        
+        # mass/LD parameter files
+        keywordDict['DAMPENING_PARAMETER_FILE'] = 'DAMP_PARAMS.txt'
+        keywordDict['MASS_PARAMETER_FILE']      = 'MASS_PARAMS.txt'
+        keywordDict['INITIAL_XYZ_FILE']         = 'INITIAL_POS.txt'
+        keywordDict['RES_RES_DISTANCE_FILE']    = 'RES_RES_DIS.txt'
+        
+        # Starting LJ parameters
+        keywordDict['INITIAL_LJ_PARAMS_FILE']   = 'INITIAL_LJ_PARAMS.txt'
+
+        # moltempate filename
+        keywordDict['OPT_MOLTEMPLATE_FILE']     = 'Moltemplate_config.lt'
+       
+        # should we plot histograms (default no!) 
+        keywordDict['PLOT_BOND_HISTOGRAMS']     = False
+        keywordDict['PLOT_ANG_HISTOGRAMS']      = False
+        keywordDict['PLOT_DIHEDRAL_HISTOGRAMS'] = False
+
+        # mixing rule 
+        keywordDict['OPT_MIXING']              = 'arithmetic'
+
+        # disable sanity checks
+        keywordDict['DISABLE_SANITY_CHECKS']   = False
+
+                                   #
+
+        return keywordDict
+        
+
+
+        
                 
     #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>   
     #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>                   
-    def parse_default(self, keyFileName):
+    def old_parse_default(self, keyFileName):
         keywordDict = {}
         keywordDict['SIMROOT'] = '/work/alex/laf1/RGG/WT/0mM_NaCl'
 
