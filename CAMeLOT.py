@@ -93,7 +93,7 @@ SimObj         = Simulations(KeyFile)
 params_by_res  = SimObj.build_dihedral_angles()
 damps          = SimObj.build_damping_parameters()
 masses         = SimObj.build_mass_parameters()
-ISP         = SimObj.build_initial_starting_parameters()
+ISP            = SimObj.build_initial_starting_parameters()
 (K,L)          = SimObj.build_bond_angles()
 SimObj.build_interresidue_distances()
 
