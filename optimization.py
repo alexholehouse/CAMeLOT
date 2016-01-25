@@ -337,10 +337,9 @@ class Optimization:
             fh.write("addpath %s\n" % self.GP_MATLAB_PATH)
             fh.write("startup % this initializes the GP framework\n")
             fh.write('\n')
+            fh.write('delete goodness.txt\n % delete the goodness file if it exists')
             fh.write("num_opt = %i;\n" %  num_params)
-            fh.write('% Set parameters to be optimized\n')
-
-            
+            fh.write('% Set parameters to be optimized\n')          
 
 
             # dynamically construct a matlab cell with the parameter types to be optimized (will match the names
@@ -494,7 +493,7 @@ class Optimization:
             writeline("  overlap = evaluate_simulation(iteration, %i)" % len(self.sequence_vector), fh)
             writeline("", fh)
             writeline("  % Save the current overlap score to a textfile for convenience ", fh)
-            writeline("  fid = fopen('goodness.txt', 'wt');", fh)
+            writeline("  fid = fopen('goodness.txt', 'at');", fh)
             writeline("  fprintf(fid, '%i   %4.2f\n', iteration, overlap);", fh)
             writeline("  fclose(fid);", fh)
             writeline('    ', fh)
@@ -764,12 +763,6 @@ class Optimization:
 
 
     
-        
-                     
-            
-                
-            
-            
         
 
     def build_GaussianProcess_simulation_code(self):

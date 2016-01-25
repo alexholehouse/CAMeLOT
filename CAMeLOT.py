@@ -89,19 +89,19 @@ if __name__=="__main__":
 KeyFile        = KeyfileParser(keyfilename)
 
 SimObj         = Simulations(KeyFile)            
-#(L,K, DH)      = SimObj.build_bond_lengths()
-#params_by_res  = SimObj.build_dihedral_angles()
-#damps          = SimObj.build_damping_parameters()
-#masses         = SimObj.build_mass_parameters()
-#ISP         = SimObj.build_initial_starting_parameters()
-#(K,L)          = SimObj.build_bond_angles()
-#SimObj.build_interresidue_distances()
+(L,K, DH)      = SimObj.build_bond_lengths()
+params_by_res  = SimObj.build_dihedral_angles()
+damps          = SimObj.build_damping_parameters()
+masses         = SimObj.build_mass_parameters()
+ISP         = SimObj.build_initial_starting_parameters()
+(K,L)          = SimObj.build_bond_angles()
+SimObj.build_interresidue_distances()
 
-#OptObj = Optimization(KeyFile, SimObj.get_sequence_vector(), SimObj.get_charge_vector(), SimObj.get_residue_rgs())
+OptObj = Optimization(KeyFile, SimObj.get_sequence_vector(), SimObj.get_charge_vector(), SimObj.get_residue_rgs())
 
-#OptObj.write_initial_sigma_eps()
-#OptObj.build_moltemplate_input()
-#OptObj.build_code()
+OptObj.write_initial_sigma_eps()
+OptObj.build_moltemplate_input()
+OptObj.build_code()
 
 
 
