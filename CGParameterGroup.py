@@ -23,7 +23,7 @@ class CGParameterGroup:
 
     key:value, key:value, key:value
 
-    IMPORTANTLYLY the characters ',' and ':' are used to define
+    IMPORTANTLYLY the characters ',' and ';' are used to define
     seperate entries in the line, and to separate out key/value
     pairing, so should NOT be used in the line (!!!)
 
@@ -61,8 +61,8 @@ class CGParameterGroup:
         for item in linelist:
             
             try:
-                key   = item.split(":")[0].lower().strip()
-                value = item.split(":")[1].strip()
+                key   = item.split(";")[0].lower().strip()
+                value = item.split(";")[1].strip()
             except:
                 raise KeyFileException("ERROR: Unable to the keyfile parameters associated with %s" % item)
             
