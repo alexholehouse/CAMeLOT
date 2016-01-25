@@ -20,9 +20,6 @@ import mdtraj as md
 import CTraj.CTTrajectory as CT
 import CTraj.CTExceptions as CTException
 
-#from GROMACS_CAMELOT import GMXTraj 
-#from GROMACS_CAMELOT import GMXTrajException
-
 from CAMeLOTExceptions import SimulationsException
 from keyfileParser import KeyfileParser
 
