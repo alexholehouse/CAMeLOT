@@ -337,7 +337,7 @@ class Optimization:
             fh.write("addpath %s\n" % self.GP_MATLAB_PATH)
             fh.write("startup % this initializes the GP framework\n")
             fh.write('\n')
-            fh.write('delete goodness.txt\n % delete the goodness file if it exists')
+            fh.write('delete goodness.txt % delete the goodness file if it exists\n')
             fh.write("num_opt = %i;\n" %  num_params)
             fh.write('% Set parameters to be optimized\n')          
 
