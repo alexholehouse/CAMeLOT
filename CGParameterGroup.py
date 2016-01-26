@@ -80,7 +80,7 @@ class CGParameterGroup:
                 try:
                     self.eps = float(value)
                 except ValueError:
-                    raise KeyFileExceptions("ERROR: Unable to interpret %s as an epislon value" % value)
+                    raise KeyFileExceptions("ERROR: Unable to interpret %s as an epsilon value" % value)
 
             # default sigma value
             elif key == "sig":

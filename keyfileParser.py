@@ -61,7 +61,7 @@ class KeyfileParser:
         # required keywords are those which MUST be included in the keyfile - i.e. CAMELOT can't set default values for these
         # keywords. Note that required_keywords is a subset of expected_keywords
         self.required_keywords = ['TEMP', 'SIMROOT', 'PYTHON_BIN', 'LAMMPS_BIN', 'MATLAB_GP_CODE_DIR', 'BOOTSTRAP_NUM_ITER', 'BOOTSTRAP_SIZE',                                 
-                                  'RES_RES_BIN_START', 'RES_RES_BIN_END', 'RES_RES_BIN_SIZE', 'OPT_KAPPA', 'OPT_LJ_CUTOFF', 'OPT_COUL_CUTOFF', 'OPT_DIELECT', 
+                                  'RES_RES_BIN_START', 'RES_RES_BIN_END', 'RES_RES_BIN_SIZE', 'OPT_KAPPA', 'OPT_COUL_CUTOFF', 'OPT_DIELECT', 
                                   'OPT_ITERATIONS', 'SIM_NSTEPS', 'SIM_DCD_OUT', 'SIM_THERMO_OUT', 'SIM_EQUIL_FRACTION', 'CG_GROUPS', 'SIMULATION_ENGINE',
                                   'PDB_FILE','TRAJECTORY_FILE']
     
@@ -288,7 +288,13 @@ class KeyfileParser:
 
                 # boolean keywords
                 elif putative_keyword in ['PLOT_BOND_HISTOGRAMS', 'PLOT_ANG_HISTOGRAMS', 'PLOT_DIHEDRAL_HISTOGRAMS', 'DISABLE_SANITY_CHECKS']:            
-                    self.keyword_lookup[putative_keyword] = bool(putative_value)
+
+                    if putative_value.upper() == "TRUE":
+                        self.keyword_lookup[putative_keyword] = True
+                    elif putative_value.upper() == "FALSE":
+                        self.keyword_lookup[putative_keyword] = False
+                    else:
+                        raise KeyFileException('Expected True or False for [%s] keyword but got [%s]. Please correct your keyfile and retry' % (putative_keyword, putative_value))
                                                                
             else:
                 raise KeyFileException('Found an unsupported keyword - [%s] ' % putative_keyword)
@@ -365,6 +371,7 @@ class KeyfileParser:
 
         # moltempate filename
         keywordDict['OPT_MOLTEMPLATE_FILE']     = 'Moltemplate_config.lt'
+        keywordDict['OPT_LJ_CUTOFF']            = float(25.0) # note this is a big LJ cutoff but actually doesn't seem to play any role whatsoever...
        
         # should we plot histograms (default no!) 
         keywordDict['PLOT_BOND_HISTOGRAMS']     = False
