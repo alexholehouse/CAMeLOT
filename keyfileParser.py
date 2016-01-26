@@ -56,7 +56,7 @@ class KeyfileParser:
                                   'AT_PARAMETER_FILE', 'BB13_PARAMETER_FILE', 'DAMPENING_PARAMETER_FILE', 'RES_RES_DISTANCE_FILE', 'RES_RES_BIN_START', 'RES_RES_BIN_END', 
                                   'RES_RES_BIN_SIZE', 'OPT_KAPPA', 'OPT_LJ_CUTOFF', 'OPT_COUL_CUTOFF', 'OPT_MOLTEMPLATE_FILE', 'OPT_DIELECT', 'OPT_MIXING', 
                                   'INITIAL_LJ_PARAMS_FILE', 'OPT_ITERATIONS', 'SIM_NSTEPS', 'SIM_DCD_OUT', 'SIM_THERMO_OUT', 'SIM_EQUIL_FRACTION' , 'CG_GROUPS',
-                                  'DISABLE_SANITY_CHECKS', 'SIMULATION_ENGINE']
+                                'DISABLE_SANITY_CHECKS', 'SIMULATION_ENGINE', 'PDB_FILE','TRAJECTORY_FILE']
         
         # required keywords are those which MUST be included in the keyfile - i.e. CAMELOT can't set default values for these
         # keywords. Note that required_keywords is a subset of expected_keywords
