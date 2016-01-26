@@ -52,7 +52,7 @@ class KeyfileParser:
         self.expected_keywords = ['LOGFILE', 'TEMP', 'SIMROOT', 'PYTHON_BIN', 'LAMMPS_BIN', 'MATLAB_GP_CODE_DIR', 'BOOTSTRAP_NUM_ITER', 'BOOTSTRAP_SIZE', 
                                   'PLOT_BOND_HISTOGRAMS', 'PLOT_ANG_HISTOGRAMS','PLOT_DIHEDRAL_HISTOGRAMS', 'INITIAL_XYZ_FILE', 'MASS_PARAMETER_FILE',
                                   'BOND_DEFINITION_FILE', 'BOND_PARAMETER_FILE', 'DIHEDRAL_DEFINITION_FILE', 'DIHEDRAL_PARAMETER_FILE', 'ANGLE_DEFINITION_FILE', 
-                                  'ANGLE_PARAMETER_FILE', 'TRAJECTORY_FILE', 'PBD_FILE', 'MBT_PARAMETER_FILE', 'EBT_PARAMETER_FILE', 'AAT_PARAMETER_FILE', 
+                                  'ANGLE_PARAMETER_FILE', 'MBT_PARAMETER_FILE', 'EBT_PARAMETER_FILE', 'AAT_PARAMETER_FILE', 
                                   'AT_PARAMETER_FILE', 'BB13_PARAMETER_FILE', 'DAMPENING_PARAMETER_FILE', 'RES_RES_DISTANCE_FILE', 'RES_RES_BIN_START', 'RES_RES_BIN_END', 
                                   'RES_RES_BIN_SIZE', 'OPT_KAPPA', 'OPT_LJ_CUTOFF', 'OPT_COUL_CUTOFF', 'OPT_MOLTEMPLATE_FILE', 'OPT_DIELECT', 'OPT_MIXING', 
                                   'INITIAL_LJ_PARAMS_FILE', 'OPT_ITERATIONS', 'SIM_NSTEPS', 'SIM_DCD_OUT', 'SIM_THERMO_OUT', 'SIM_EQUIL_FRACTION' , 'CG_GROUPS',
@@ -62,7 +62,8 @@ class KeyfileParser:
         # keywords. Note that required_keywords is a subset of expected_keywords
         self.required_keywords = ['TEMP', 'SIMROOT', 'PYTHON_BIN', 'LAMMPS_BIN', 'MATLAB_GP_CODE_DIR', 'BOOTSTRAP_NUM_ITER', 'BOOTSTRAP_SIZE',                                 
                                   'RES_RES_BIN_START', 'RES_RES_BIN_END', 'RES_RES_BIN_SIZE', 'OPT_KAPPA', 'OPT_LJ_CUTOFF', 'OPT_COUL_CUTOFF', 'OPT_DIELECT', 
-                                  'OPT_ITERATIONS', 'SIM_NSTEPS', 'SIM_DCD_OUT', 'SIM_THERMO_OUT', 'SIM_EQUIL_FRACTION', 'CG_GROUPS', 'SIMULATION_ENGINE']
+                                  'OPT_ITERATIONS', 'SIM_NSTEPS', 'SIM_DCD_OUT', 'SIM_THERMO_OUT', 'SIM_EQUIL_FRACTION', 'CG_GROUPS', 'SIMULATION_ENGINE',
+                                  'PDB_FILE','TRAJECTORY_FILE']
     
         # zero out a couple of key dictionaries
         self.keyword_lookup = {}
@@ -107,7 +108,7 @@ class KeyfileParser:
         self.ANGLE_DEFINITION_FILE       = self.keyword_lookup['ANGLE_DEFINITION_FILE']
         self.ANGLE_PARAMETER_FILE        = self.keyword_lookup['ANGLE_PARAMETER_FILE']
         self.TRAJECTORY_FILE             = self.keyword_lookup['TRAJECTORY_FILE']
-        self.PDB_FILE                    = self.keyword_lookup['PBD_FILE']
+        self.PDB_FILE                    = self.keyword_lookup['PDB_FILE']
         self.MBT_PARAMETER_FILE          = self.keyword_lookup['MBT_PARAMETER_FILE']
         self.EBT_PARAMETER_FILE          = self.keyword_lookup['EBT_PARAMETER_FILE']
         self.AAT_PARAMETER_FILE          = self.keyword_lookup['AAT_PARAMETER_FILE']
@@ -277,7 +278,7 @@ class KeyfileParser:
                                           'BOND_PARAMETER_FILE', 'DIHEDRAL_DEFINITION_FILE', 'DIHEDRAL_PARAMETER_FILE', 'ANGLE_DEFINITION_FILE',
                                           'ANGLE_PARAMETER_FILE','MBT_PARAMETER_FILE', 'EBT_PARAMETER_FILE', 'AAT_PARAMETER_FILE', 'AT_PARAMETER_FILE',
                                           'BB13_PARAMETER_FILE', 'DAMPENING_PARAMETER_FILE', 'MASS_PARAMETER_FILE', 'INITIAL_XYZ_FILE','RES_RES_DISTANCE_FILE',
-                                          'TRAJECTORY_FILE', 'PBD_FILE', 'INITIAL_LJ_PARAMS_FILE','OPT_MOLTEMPLATE_FILE', 'OPT_MIXING', 'SIMULATION_ENGINE']:
+                                          'TRAJECTORY_FILE', 'PDB_FILE', 'INITIAL_LJ_PARAMS_FILE','OPT_MOLTEMPLATE_FILE', 'OPT_MIXING', 'SIMULATION_ENGINE']:
 
                     # for case insensitive keywords set value to upper
                     if putative_keyword in ['SIMULATION_ENGINE']:
@@ -429,8 +430,8 @@ class KeyfileParser:
 
         #keywordDict['TRAJECTORY_FILE'] = "N_005___traj.xtc"
         keywordDict['TRAJECTORY_FILE'] = "__traj.xtc"
-        #keywordDict['PBD_FILE'] = "N_005___START.pdb"
-        keywordDict['PBD_FILE'] = "__START.pdb"
+        #keywordDict['PDB_FILE'] = "N_005___START.pdb"
+        keywordDict['PDB_FILE'] = "__START.pdb"
 
         keywordDict['INITIAL_LJ_PARAMS_FILE'] = 'INITIAL_LJ_PARAMS.txt'
 
