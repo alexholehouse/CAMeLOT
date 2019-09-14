@@ -1,7 +1,8 @@
 ## CAMeLOT V 0.1.2
 ## Coarse-grained simulations Aided by Machine Learning, Optimization and Training
 ## Pappu lab, Washington University in St. Louis
-## Copyright 2015 - 2017
+## Code written by Alex Holehouse based on original principles developed by Kiersten Ruff
+## Copyright 2015 - 2020
 ##
 
 

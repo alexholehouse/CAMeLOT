@@ -1,13 +1,15 @@
 ## CAMeLOT V 0.1.2
 ## Coarse-grained simulations Aided by Machine Learning, Optimization and Training
 ## Pappu lab, Washington University in St. Louis
-## Copyright 2015 - 2017
+## Code written by Alex Holehouse based on original principles developed by Kiersten Ruff
+## Copyright 2015 - 2019
 ##
 
 import time
 from CAMeLOTExceptions import OptimizationException
 from MolTemplate import MolTemplate
 from utils import writeline
+import configs
 
 class Optimization:
     
@@ -830,14 +832,14 @@ class Optimization:
             writeline('# 5) run moltemplate', fh)
             writeline('CWD = os.getcwd()', fh)
             writeline('simdir = "%s/%i"%(CWD, iteration)',fh)
-            writeline("p = subprocess.Popen(['sh', '/work/alex/coarse_graining/CAMeLOT/moltemplate/moltemplate3.sh', 'system.lt'], cwd=simdir)", fh)
+            writeline("p = subprocess.Popen(['sh', '%s', 'system.lt'], cwd=simdir)"%(configs.MOLTEMPLATE3_LOCATION), fh)
             writeline("p.wait()",fh)
             
             
-            writeline("p = subprocess.Popen(['/home/kruff/LAMMPS/lammps-16Dec13/src/lmp_openmpi5', '-i', 'run.in.min'], cwd=simdir)", fh)
+            writeline("p = subprocess.Popen(['%s', '-i', 'run.in.min'], cwd=simdir)"%(configs.LAMMPS_LOCATION), fh)
             writeline("p.wait()",fh)
             
-            writeline("p = subprocess.Popen(['/home/kruff/LAMMPS/lammps-16Dec13/src/lmp_openmpi5', '-i', 'run.in.nvt'], cwd=simdir)", fh)
+            writeline("p = subprocess.Popen(['%s', '-i', 'run.in.nvt'], cwd=simdir)"%(configs.LAMMPS_LOCATION), fh)
             writeline("p.wait()",fh)
             
 
@@ -863,7 +865,7 @@ class Optimization:
             writeline('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%', fh)
             writeline('   ', fh)
             writeline('% source the dcd reading functionality', fh)
-            writeline('addpath /work/alex/tools/matlab_functions/matdcd-1.0/   ', fh)            
+            writeline('addpath %s   '%(configs.MATDCD_LOCATION), fh)            
             writeline('% box length', fh)
             writeline('bl = [255.1, 255.1, 255.1];', fh)
             writeline('      ', fh)
