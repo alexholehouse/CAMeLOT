@@ -19,9 +19,7 @@
 #
 #-----------------------------------------------------------------------------------
 #
-# VERSION 0.1.2
-# Copyright 2015 - 2017
-# 
+#
 # Coarse grain approach by Kiersten Ruff, Tyler Harmon, and Rohit Pappu
 # Original code by Kiersten Ruff
 # Current implementation by Alex Holehouse
