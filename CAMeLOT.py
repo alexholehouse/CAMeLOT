@@ -1,7 +1,7 @@
-## CAMeLOT V 0.1.1
+## CAMeLOT V 0.1.2
 ## Coarse-grained simulations Aided by Machine Learning, Optimization and Training
 ## Pappu lab, Washington University in St. Louis
-## Copyright 2015 - 2016
+## Copyright 2015 - 2017
 ##
 
 #-----------------------------------------------------------------------------------
@@ -18,8 +18,8 @@
 #
 #-----------------------------------------------------------------------------------
 #
-# VERSION 0.1.1
-# Copyright 2015 
+# VERSION 0.1.2
+# Copyright 2015 - 2017
 # 
 # Coarse grain approach by Kiersten Ruff, Tyler Harmon, and Rohit Pappu
 # Original code by Kiersten Ruff
@@ -49,6 +49,12 @@
 # aggregates in block-copolymeric N17-polyQ sequences. The CAMELOT approach is versatile and
 # is generalizable for simulating the aggregation and phase behavior of a range of block-copolymeric
 # protein sequences.
+#
+# Changelog
+#
+# v 0.1.2
+# Updated to work with the newer version of CTraj where distances are written out in Angstroms instead of
+# nm. Converts distances to nm to maintain compatibility with all existing code!
 #
 #-----------------------------------------------------------------------------------
 #

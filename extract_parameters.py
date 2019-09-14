@@ -1,8 +1,8 @@
-## CAMeLOT V 0.1.1
+## CAMeLOT V 0.1.2
 ## Coarse-grained simulations Aided by Machine Learning, Optimization and Training
 ## Pappu lab, Washington University in St. Louis
+## Copyright 2015 - 2017
 ##
-## test
 
 
 import os
@@ -453,8 +453,10 @@ class Simulations:
 
             # in each replica
             for replica in self.replica_vector:                
-                prot = replica.proteinTrajectoryList[0]                
-                tmp.append(prot.get_radius_of_gyration(res,res))
+                prot = replica.proteinTrajectoryList[0]             
+
+                # note the /10.0 converts from Angstroms to nm
+                tmp.append(prot.get_radius_of_gyration(res,res)/10.0)
 
             # calculate mean associated with the residue from all replicas
             rg_vector.append(np.mean(tmp))
@@ -494,7 +496,11 @@ class Simulations:
             for replica in self.replica_vector:
                 
                 prot = replica.proteinTrajectoryList[0]
-                tmp_distances = np.concatenate((tmp_distances, prot.get_interResidueCOMDistance(res,res+1)))
+
+                # /10.0 to convert into nm
+                tmp_distances = np.concatenate((tmp_distances, prot.get_interResidueCOMDistance(res,res+1)/10.0))
+
+            
                                                                         
             i_to_i1_distance.append(tmp_distances)
             i_to_i1_distance_sqrd.append(np.square(tmp_distances))
@@ -597,7 +603,8 @@ class Simulations:
                 j=idx+2
 
                 # note we /100 and * 10 so the values come out as angstroms and angstrom appropriate (100 because K comes
-                # from an L squared term so have to account for squared units)
+                # from an L squared term so have to account for squared units). Note this assumes the distances were in nm
+                # before (so we convert from A->nm->A - yes this is silly, legacy code is a pain!)
                 fh.write('bond_coeff @bond:Res%iRes%i %4.2f %4.2f \n' %(i,j,K_mean[idx]/100,L_mean[idx]*10) )
 
         self.STDMessage("Bonded parameters generated", msgType='SUCCESS')
@@ -1069,7 +1076,8 @@ class Simulations:
 
                     prot = replica.proteinTrajectoryList[0]
                     
-                    tmp_distances = np.concatenate((tmp_distances, prot.get_interResidueCOMDistance(res, res2)))
+                    # note the /10.0 is so we convert from Angstroms to nm
+                    tmp_distances = np.concatenate((tmp_distances, prot.get_interResidueCOMDistance(res, res2)/10.0))
 
                 # and build a histogram with the defined binsize
             
